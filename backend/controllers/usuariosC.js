@@ -46,6 +46,17 @@ class usuariosC {
     })
   }
 
+  cambioClave(datos) {
+    return new Promise(async (resolve, reject) => {
+      usuariosM.cambioClave(datos)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
+
   editar(user) {
     return new Promise((resolve, reject) => {
       usuariosM.editar(user)

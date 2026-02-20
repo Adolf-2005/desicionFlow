@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-main class="">
-      <Navbar v-if="$route.name === 'Login' ? false : true" />
+      <Navbar v-if="($route.name === 'Login') || ($route.name === 'Password') ? false : true" />
       <router-view />
       <BotonTema />
     </v-main>

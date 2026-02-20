@@ -14,6 +14,7 @@ CREATE TABLE usuarios (
     cedula VARCHAR(16) UNIQUE NOT NULL,
     activo TINYINT DEFAULT 1,
     id_rol VARCHAR(200),
+    change_pass TINYINT DEFAULT 1, 
     FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE SET NULL
 );
 
@@ -109,3 +110,6 @@ CREATE TABLE comentarios (
     comentario TEXT NOT NULL,
     FOREIGN KEY (id_val) REFERENCES valoracion(id_val) ON DELETE CASCADE
 );
+
+INSERT INTO roles (id_rol, nombre) VALUES ('13ahw8q2yhr19r8hn1qe12h3891h2e91nr', 'Admin');
+INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, id_rol, change_pass) VALUES (1, 'Admin', 'Admin', 'admin', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C','Admin', '13ahw8q2yhr19r8hn1qe12h3891h2e91nr', 0); 

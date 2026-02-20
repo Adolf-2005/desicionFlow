@@ -9,6 +9,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import index from '@/pages/index.vue'
 import Login from '@/pages/Login.vue'
 import Usuarios from '@/pages/Usuarios.vue'
+import CambioClave from '@/pages/CambioClave.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,12 @@ const router = createRouter({
       name: 'Usuarios',
       component: Usuarios,
       meta: { title: 'Usuarios', requiresAuth: true }
+    },
+    {
+      path: '/password',
+      name: 'Password',
+      component: CambioClave,
+      meta: { title: 'Cambio de clave', requiresAuth: false }
     },
   ],
 })

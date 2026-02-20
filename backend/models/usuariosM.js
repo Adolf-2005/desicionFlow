@@ -53,7 +53,7 @@ class usuariosM {
   login(user) {
     return new Promise(async (resolve, reject) => {
       const { usuario, clave } = user
-      const sql = 'SELECT u.id_usu, u.nombre, u.apellido, u.usuario, u.clave, u.cedula, u.id_rol, r.nombre AS rol FROM usuarios u LEFT JOIN roles r ON r.id_rol = u.id_rol WHERE u.usuario = ?'
+      const sql = 'SELECT u.id_usu, u.nombre, u.apellido, u.usuario, u.clave, u.change_pass, u.cedula, u.id_rol, r.nombre AS rol FROM usuarios u LEFT JOIN roles r ON r.id_rol = u.id_rol WHERE u.usuario = ?'
       db.query(sql, [usuario], async function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
@@ -68,7 +68,43 @@ class usuariosM {
             usuario: res[0].usuario,
             id: res[0].id_usu,
           }, process.env.JSONWEBTOKEN, { expiresIn: '12' });
-          resolve({ status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12 })
+          const cambio = res[0].change_pass == 1 ? true : false
+          resolve({ status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12, cambio_clave: cambio })
+        } else {
+          resolve({ status: 401, mensaje: 'Contraseña incorrecta' })
+        }
+      })
+    })
+  }
+
+  cambioClave(datos) {
+    return new Promise((resolve, reject) => {
+      const { actual, clave, usuario } = datos
+      const sql = 'SELECT clave, change_pass FROM usuarios WHERE usuario = ?'
+      const sqlChange = 'UPDATE usuarios SET clave = ?, change_pass = ? WHERE usuario = ?'
+      db.query(sql, [usuario], async function (err, res) {
+        if (err) {
+          return reject({ status: 500, mensaje: err })
+        }
+        if (!res.length) {
+          return resolve({ status: 404, mensaje: 'Usuario no encontrado' })
+        }
+        if (res[0].change_pass == 0) {
+          return reject({ status: 401, mensaje: 'Cambio no aprobado' })
+        }
+        const hash = res[0].clave
+        const access = await bcrypt.compare(actual, hash)
+        if (access === true) {
+          const hashPass = await bcrypt.hash(clave, saltRounds);
+          db.query(sqlChange, [hashPass, usuario, 0], async function (err, res) {
+            if (err) {
+              return reject({ status: 500, mensaje: err })
+            }
+            if (res.affectedRows === 0) {
+              return reject({ status: 400, mensaje: 'Usuario no encontrado' })
+            }
+          })
+          resolve({ status: 200, mensaje: 'Bienvenido'})
         } else {
           resolve({ status: 401, mensaje: 'Contraseña incorrecta' })
         }
