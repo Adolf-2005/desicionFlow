@@ -1,5 +1,5 @@
 <template>
-  <v-btn class="position-fixed top-0 right-0 ma-5" @click="theme.toggle()"
+  <v-btn class="position-fixed top-0 right-0 ma-5" @click="theme.toggle()" style="z-index: 999999;"
     :icon="theme.name.value === 'dark' ? 'mdi-weather-sunny' : 'mdi-moon-waning-crescent'"></v-btn>
 </template>
 

@@ -18,7 +18,7 @@
   <div v-if="$vuetify.display.mobile">
     <v-app-bar>
       <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>Ventas</v-toolbar-title>
+      <v-toolbar-title>Decision Flow</v-toolbar-title>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'left' : undefined" temporary>
       <v-list>
@@ -50,6 +50,18 @@ const items = [
     value: 'usuarios',
     icon: 'mdi-account-group',
     ruta: 'usuarios'
+  },
+  {
+    title: 'Proyectos',
+    value: 'Proyectos',
+    icon: 'mdi-projector-screen',
+    ruta: 'proyectos'
+  },
+  {
+    title: 'Equipos',
+    value: 'Equipos',
+    icon: 'mdi-clipboard-account-outline',
+    ruta: 'equipos'
   },
 ]
 

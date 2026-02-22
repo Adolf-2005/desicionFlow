@@ -10,7 +10,7 @@ class usuariosM {
 
   todos() {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT u.id_usu, u.nombre, u.apellido, u.usuario, u.cedula, u.id_rol, r.nombre AS rol FROM usuarios u LEFT JOIN roles r ON r.id_rol = u.id_rol WHERE u.activo = 1'
+      const sql = 'SELECT id_usu, nombre, apellido, usuario, cedula, rol FROM usuarios WHERE activo = 1'
       db.query(sql, function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
@@ -25,10 +25,10 @@ class usuariosM {
 
   crear(user) {
     return new Promise(async (resolve, reject) => {
-      const { nombre, apellido, usuario, clave, cedula, id_rol } = user
-      const sql = 'INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, id_rol) VALUES (?,?,?,?,?,?,?)'
+      const { nombre, apellido, usuario, clave, cedula, rol } = user
+      const sql = 'INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol) VALUES (?,?,?,?,?,?,?)'
       const hash = await bcrypt.hash(clave, saltRounds);
-      const insert = [uuidv4(), nombre, apellido, usuario.toLowerCase(), hash, cedula, id_rol]
+      const insert = [uuidv4(), nombre, apellido, usuario.toLowerCase(), hash, cedula, rol]
       try {
         db.query(sql, insert, function (err, res) {
           if (err) {
@@ -53,7 +53,7 @@ class usuariosM {
   login(user) {
     return new Promise(async (resolve, reject) => {
       const { usuario, clave } = user
-      const sql = 'SELECT u.id_usu, u.nombre, u.apellido, u.usuario, u.clave, u.change_pass, u.cedula, u.id_rol, r.nombre AS rol FROM usuarios u LEFT JOIN roles r ON r.id_rol = u.id_rol WHERE u.usuario = ?'
+      const sql = 'SELECT id_usu, nombre, apellido, usuario, clave, change_pass, cedula, rol FROM usuarios WHERE usuario = ?'
       db.query(sql, [usuario], async function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
@@ -114,9 +114,9 @@ class usuariosM {
 
   editar(user) {
     return new Promise((resolve, reject) => {
-      const { nombre, apellido, cedula, id_rol, id_usu } = user
-      const sql = 'UPDATE usuarios SET nombre=?, apellido=?, cedula=?, id_rol =? WHERE id_usu =?'
-      const edit = [nombre, apellido, cedula, id_rol, id_usu]
+      const { nombre, apellido, cedula, rol, id_usu } = user
+      const sql = 'UPDATE usuarios SET nombre=?, apellido=?, cedula=?, rol =? WHERE id_usu =?'
+      const edit = [nombre, apellido, cedula, rol, id_usu]
       if (!id_usu || !cedula || !nombre || !apellido) {
         return reject({ status: 400, mensaje: 'Datos incompletos' })
       }

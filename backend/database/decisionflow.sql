@@ -1,9 +1,3 @@
--- Tabla de roles
-CREATE TABLE roles (
-    id_rol VARCHAR(200) PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL
-);
-
 -- Tabla de usuarios
 CREATE TABLE usuarios (
     id_usu VARCHAR(200) PRIMARY KEY,
@@ -13,9 +7,8 @@ CREATE TABLE usuarios (
     clave VARCHAR(300) NOT NULL,
     cedula VARCHAR(16) UNIQUE NOT NULL,
     activo TINYINT DEFAULT 1,
-    id_rol VARCHAR(200),
-    change_pass TINYINT DEFAULT 1, 
-    FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE SET NULL
+    rol ENUM('Admin', 'admin', 'Auditor','auditor', 'Miembro', 'miembro') DEFAULT 'Miembro',
+    change_pass TINYINT DEFAULT 1
 );
 
 -- Tabla de equipos
@@ -50,6 +43,8 @@ CREATE TABLE proyecto (
     fecha_inicio TIMESTAMP NULL,
     fecha_cierre TIMESTAMP NULL,
     id_responsable VARCHAR(200) NULL,
+    documento VARCHAR(500) NULL,
+    imagen VARCHAR(500) NULL,
     FOREIGN KEY (id_equipo) REFERENCES equipos(id_equi) ON DELETE SET NULL,
     FOREIGN KEY (id_responsable) REFERENCES usuarios(id_usu) ON DELETE SET NULL,
     INDEX idx_equipo (id_equipo),
@@ -112,4 +107,10 @@ CREATE TABLE comentarios (
 );
 
 INSERT INTO roles (id_rol, nombre) VALUES ('13ahw8q2yhr19r8hn1qe12h3891h2e91nr', 'Admin');
-INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, id_rol, change_pass) VALUES (1, 'Admin', 'Admin', 'admin', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C','Admin', '13ahw8q2yhr19r8hn1qe12h3891h2e91nr', 0); 
+INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol, change_pass) VALUES (1, 'Admin', 'Admin', 'admin', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C','Admin', 'Miembro', 0); 
+INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol, change_pass) VALUES 
+(2, 'Juan', 'Pérez', 'jperez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-10203040', 'Miembro', 0),
+(3, 'María', 'García', 'mgarcia', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-20304050', 'Miembro', 0),
+(4, 'Carlos', 'López', 'clopez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-30405060', 'Miembro', 0),
+(5, 'Ana', 'Martínez', 'amartinez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-40506070', 'Miembro', 0),
+(6, 'Luis', 'Rodríguez', 'lrodriguez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-50607080', 'Miembro', 0);

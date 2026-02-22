@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="show" :color="color" :timeout="timeout" location="top right" elevation="24">
+  <v-snackbar v-model="show" :color="color" :timeout="timeout" location="top right" elevation="24" style="z-index: 9999999;">
     <div class="d-flex align-center">
       <v-icon :icon="icon" class="me-3"></v-icon>
       <div>

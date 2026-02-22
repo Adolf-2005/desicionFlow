@@ -5,9 +5,6 @@
         <v-col cols="12" sm="auto" align="center" justify="center">
           <v-btn text="Crear usuario" color="primary" prepend-icon="mdi-plus" @click="formulario.abrir()"></v-btn>
         </v-col>
-        <v-col cols="12" sm="auto" align="center" justify="center">
-          <v-btn text="Crear rol" color="primary" prepend-icon="mdi-format-list-bulleted-type" @click="crearRoles"></v-btn>
-        </v-col>
       </v-row>
     </v-card-item>
     <v-row>
@@ -66,6 +63,7 @@ import ModalEliminar from '@/components/modales/ModalEliminar.vue';
 import ModalFormularios from '@/components/modales/ModalFormularios.vue';
 import Notificacion from '@/components/Notificacion.vue';
 import { apiCall } from '@/utils/apiCall';
+import { constantes } from '@/utils/constantes';
 import { capitalizeObject } from '@/utils/funciones';
 import { computed, onMounted, ref } from 'vue';
 
@@ -74,23 +72,16 @@ const alerta = ref(null)
 const formulario = ref(null)
 const eliminar = ref(null)
 const titulo = ref('Crear usuarios')
-const roles = ref([])
 const usuarioEdit = ref(false)
 const formularioUsuarios = ref('usuarios')
 const fields = computed(() => {
-  if (formularioUsuarios.value === 'usuarios') {
-    return [
-      { title: 'Nombre', type: 'text', row: true, key: 'nombre', subTitle: 'Apellido', subType: 'text', subKey: 'apellido' },
-      { title: 'Prefijo', type: 'select', row: true, key: 'prefijo', subTitle: 'Cedula', subType: 'number', subKey: 'cedula' },
-      { title: 'Usuario', type: 'text', row: false, key: 'usuario', readonly: usuarioEdit.value },
-      { title: 'Contraseña', type: 'password', row: false, key: 'clave', edit: usuarioEdit.value },
-      { title: 'Rol del usuario', type: 'select', row: false, key: 'id_rol', items: roles.value, titleItem: 'nombre', valueItem: 'id_rol' },
-    ]
-  } else if (formularioUsuarios.value === 'rol') {
-    return [
-      { title: 'Nombre el rol', type: 'text', row: false, key: 'nombre', }
-    ]
-  }
+  return [
+    { title: 'Nombre', type: 'text', row: true, key: 'nombre', subTitle: 'Apellido', subType: 'text', subKey: 'apellido' },
+    { title: 'Prefijo', type: 'select', row: true, items: constantes.indentificacion, key: 'prefijo', subTitle: 'Cedula', subType: 'number', subKey: 'cedula' },
+    { title: 'Usuario', type: 'text', row: false, key: 'usuario', readonly: usuarioEdit.value },
+    { title: 'Contraseña', type: 'password', row: false, key: 'clave', edit: usuarioEdit.value },
+    { title: 'Rol del usuario', type: 'select', row: false, key: 'rol', items: constantes.roles, object: false },
+  ]
 })
 
 function limpiar() {
@@ -99,12 +90,6 @@ function limpiar() {
   formularioUsuarios.value = 'usuarios'
 }
 
-function crearRoles() {
-  formularioUsuarios.value = 'rol'
-  usuarioEdit.value = false
-  titulo.value = 'Crear roles'
-  formulario.value.abrir()
-}
 
 async function obtenerDatos() {
   await apiCall('usuarios')
@@ -135,82 +120,33 @@ async function recargar() {
         message: err.mensaje
       })
     });
-  await apiCall('roles')
-    .then((result) => {
-      roles.value = result.data.roles
-      roles.value.unshift({ id_rol: null, nombre: 'Seleccione un rol' })
-    }).catch((err) => {
-      alerta.value.notify({
-        type: 'error',
-        title: 'Error',
-        message: err.mensaje
-      })
-    });
-}
-
-async function obtenerRoles() {
-  await apiCall('roles')
-    .then((result) => {
-      roles.value = result.data.roles
-      roles.value.unshift({ id_rol: null, nombre: 'Seleccione un rol' })
-    }).catch((err) => {
-      alerta.value.notify({
-        type: 'error',
-        title: 'Error',
-        message: err.mensaje
-      })
-    });
 }
 
 async function guardar(data) {
-  if (formularioUsuarios.value === 'usuarios') {
-    const id_rol = data.id_rol
-    const datos = capitalizeObject(data)
-    datos.cedula = datos.prefijo + datos.cedula
-    datos.id_rol = id_rol
-    await apiCall('usuarios/crear', 'POST', datos)
-      .then((result) => {
-        alerta.value.notify({
-          type: 'success',
-          title: '',
-          message: result.data?.mensaje || 'Credenciales inválidas'
-        })
-        recargar()
-        formulario.value.cerrar()
-      }).catch((err) => {
-        alerta.value.notify({
-          type: 'error',
-          title: 'Error',
-          message: err.mensaje
-        })
-      });
-  } else if (formularioUsuarios.value === 'rol') {
-    const datos = capitalizeObject(data)
-    await apiCall('roles/crear', 'POST', datos)
-      .then((result) => {
-        alerta.value.notify({
-          type: 'success',
-          title: '',
-          message: result.data?.mensaje || 'Credenciales inválidas'
-        })
-        recargar()
-        formulario.value.cerrar()
-      }).catch((err) => {
-        alerta.value.notify({
-          type: 'error',
-          title: 'Error',
-          message: err.mensaje
-        })
-      });
-  }
+  const datos = capitalizeObject(data)
+  datos.cedula = datos.prefijo + datos.cedula
+  await apiCall('usuarios/crear', 'POST', datos)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      formulario.value.cerrar()
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: 'Error',
+        message: err.mensaje
+      })
+    });
 }
 
 async function editarApi(data) {
-  const id_rol = data.id_rol?.id_rol || data.id_rol
   const id_usu = data.id_usu
   const datos = capitalizeObject(data)
   datos.cedula = datos.prefijo + datos.cedula
-  datos.id_rol = id_rol
   datos.id_usu = id_usu
   await apiCall('usuarios/editar', 'PUT', datos)
     .then((result) => {
@@ -239,7 +175,7 @@ function editarUsuario(datos) {
     usuario: datos.usuario,
     prefijo: datos.cedula.split('-')[0] + '-',
     cedula: datos.cedula.split('-')[1],
-    id_rol: roles.value.find((e) => e.id_rol == datos.id_rol),
+    rol: datos.rol,
     clave: null,
   }
   usuarioEdit.value = true
@@ -268,7 +204,6 @@ async function eliminarUsuario(id) {
 
 onMounted(() => {
   obtenerDatos()
-  obtenerRoles()
 })
 
 </script>
