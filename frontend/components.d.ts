@@ -13,7 +13,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     BotonTema: typeof import('./src/components/BotonTema.vue')['default']
+    DocumentoBox: typeof import('./src/components/DocumentoBox.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    ImagenBox: typeof import('./src/components/ImagenBox.vue')['default']
+    ModalCrearProyecto: typeof import('./src/components/modales/ModalCrearProyecto.vue')['default']
     ModalEliminar: typeof import('./src/components/modales/ModalEliminar.vue')['default']
     ModalFormularios: typeof import('./src/components/modales/ModalFormularios.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']

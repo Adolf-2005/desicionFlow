@@ -4,18 +4,19 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors')
+var multer = require('multer')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var usuariosRouter = require('./routes/usuarios')
-var rolesRouter = require('./routes/roles')
+var proyectosRouter = require('./routes/proyectos')
+var EquiposRouter = require('./routes/equipos')
 
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
 
 app.use(cors({
   origin: process.env.PORTCORS, // Solo permite tu frontend
@@ -24,14 +25,18 @@ app.use(cors({
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/files', express.static(path.join(__dirname, 'uploads')));
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/usuarios', usuariosRouter);
-app.use('/roles', rolesRouter);
+app.use('/proyectos', proyectosRouter);
+app.use('/equipos', EquiposRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

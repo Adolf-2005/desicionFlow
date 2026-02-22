@@ -1,10 +1,10 @@
-const rolesM = require('../models/rolesM')
+var equiposM = require('../models/equiposM')
 
-class rolesC {
+class equipoC {
 
-  roles() {
+  miembros() {
     return new Promise((resolve, reject) => {
-      rolesM.roles()
+      equiposM.miembros()
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -13,9 +13,20 @@ class rolesC {
     })
   }
 
-  crear(nombre) {
-    return new Promise(async (resolve, reject) => {
-      rolesM.crear(nombre)
+  equipos() {
+    return new Promise((resolve, reject) => {
+      equiposM.equipos()
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
+
+  crear(datos) {
+    return new Promise((resolve, reject) => {
+      equiposM.crear(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -26,7 +37,7 @@ class rolesC {
 
   editar(datos) {
     return new Promise((resolve, reject) => {
-      rolesM.editar (datos)
+      equiposM.editar(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -37,4 +48,4 @@ class rolesC {
 
 }
 
-module.exports = new rolesC();
+module.exports = new equipoC();
