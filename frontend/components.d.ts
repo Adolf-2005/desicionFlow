@@ -16,6 +16,7 @@ declare module 'vue' {
     DocumentoBox: typeof import('./src/components/DocumentoBox.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     ImagenBox: typeof import('./src/components/ImagenBox.vue')['default']
+    ModalCrearEquipos: typeof import('./src/components/modales/ModalCrearEquipos.vue')['default']
     ModalCrearProyecto: typeof import('./src/components/modales/ModalCrearProyecto.vue')['default']
     ModalEliminar: typeof import('./src/components/modales/ModalEliminar.vue')['default']
     ModalFormularios: typeof import('./src/components/modales/ModalFormularios.vue')['default']
@@ -23,5 +24,6 @@ declare module 'vue' {
     Notificacion: typeof import('./src/components/Notificacion.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Vacio: typeof import('./src/components/Vacio.vue')['default']
   }
 }

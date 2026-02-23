@@ -9,7 +9,7 @@
             </v-toolbar-title>
           </v-toolbar>
           <v-card-text class="pa-8">
-            <v-form ref="form" v-model="formLogin">
+            <v-form ref="form" v-model="formLogin" @submit.prevent="login">
               <v-text-field v-model="record.usuario" label="Nombre de usuario" prepend-inner-icon="mdi-account-key"
                 variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]"></v-text-field>
               <div class="d-flex gap-2">
@@ -70,7 +70,7 @@ function login() {
       alerta.value.notify({
         type: 'error',
         title: 'Fallo de acceso',
-        message: err.response?.data?.mensaje || 'Credenciales inválidas'
+        message: err?.mensaje || 'Credenciales inválidas'
       })
     });
 }

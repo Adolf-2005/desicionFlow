@@ -135,7 +135,6 @@ class usuariosM {
   eliminar(id_usu) {
     return new Promise((resolve, reject) => {
       const sql = 'UPDATE usuarios SET activo = ? WHERE id_usu = ?'
-      console.log(id_usu)
       if (!id_usu) {
         return reject({ status: 404, mensaje: 'Datos incompletos' })
       }

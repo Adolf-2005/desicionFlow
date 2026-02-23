@@ -45,6 +45,28 @@ class equipoC {
         });
     })
   }
+ 
+  eliminar(id_equi) {
+    return new Promise((resolve, reject) => {
+      equiposM.elimiar(id_equi)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
+  
+  elimiarMiembro(datos) {
+    return new Promise((resolve, reject) => {
+      equiposM.elimiarMiembro(datos)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
 
 }
 

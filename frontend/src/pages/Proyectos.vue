@@ -141,7 +141,7 @@ import ImagenBox from '@/components/ImagenBox.vue';
 import ModalCrearProyecto from '@/components/modales/ModalCrearProyecto.vue';
 import ModalEliminar from '@/components/modales/ModalEliminar.vue';
 import { apiCall, uploadFilesWithFetch } from '@/utils/apiCall';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 
 const proyectos = ref([])

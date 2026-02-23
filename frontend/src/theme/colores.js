@@ -3,7 +3,7 @@
 const lightTheme = {
   dark: false,
   colors: {
-    primary: '#FF0000',
+    primary: '#2c67c0',
     secondary: '#475569',
     accent: '#06B6D4',
     error: '#EF4444',
