@@ -7,8 +7,16 @@
         </v-col>
       </v-row>
     </v-card-item>
+    <v-card-title>
+      Lista de proyectos
+    </v-card-title>
     <v-col v-for="(p, index) in proyectos" :key="p.id_pro">
-      <v-card elevation="5" :title="p.nombre" prepend-icon="mdi-package">
+      <v-card elevation="5" prepend-icon="mdi-package">
+        <template #title>
+          <span class="text-capitalize">
+            {{ p.nom_pro }}
+          </span>
+        </template>
         <template v-slot:subtitle>
           <p class="text-wrap">
             Fecha de creación: {{ formatDate(p.fecha_creacion) }}
@@ -24,7 +32,7 @@
                       <v-icon>mdi-text-box</v-icon>
                     </v-avatar>
                   </template>
-                  {{ p.descripcion }}
+                  {{ p.des_pro }}
                 </v-list-item>
                 <v-list-item>
                   <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
@@ -60,7 +68,31 @@
                       <v-icon>mdi-list-status</v-icon>
                     </v-avatar>
                   </template>
-                  Estado <v-chip :color="estadoColor(p.estado)">{{ p.estado }}</v-chip> </v-list-item>
+                  Estado <v-chip :color="estadoColor(p.estado)">{{ p.estado }}</v-chip>
+                </v-list-item>
+                <v-list-item>
+                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                    <v-avatar color="primary" variant="tonal" size="40">
+                      <v-icon>mdi-microsoft-teams</v-icon>
+                    </v-avatar>
+                  </template>
+                  <div class="d-flex flex-column justify-start align-start">
+                    <span>
+                      Equipo asignado
+                      <v-chip :color="p.nom_equi ? 'success' : 'warning'" tonal>
+                        {{ p.nom_equi ? p.nom_equi : 'Sin equipo asignado' }}
+                      </v-chip>
+                    </span>
+                    <small>{{ p.des_equi ? p.des_equi : '' }}</small>
+                  </div>
+                </v-list-item>
+                <v-list-item :title="p.nom_lider" :subtitle="'@' + p.usuario" v-if="p.id_responsable">
+                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                    <v-avatar color="primary" variant="tonal" size="40">
+                      <v-icon>mdi-account-tie-hat</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
                 <v-list-item>
                   <DocumentoBox :document-url="p.documento" :document-name="p.nombre" />
                 </v-list-item>
@@ -71,10 +103,33 @@
             </v-col>
           </v-row>
         </v-card-text>
+        <v-card-actions>
+          <v-row class="pt-2">
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus" @click="formulario.abrir()"></v-btn>
+            </v-col>
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click=""></v-btn>
+            </v-col>
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert" @click=""></v-btn>
+            </v-col>
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline" @click=""></v-btn>
+            </v-col>
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock" @click=""></v-btn>
+            </v-col>
+            <v-col cols="auto" align="center" justify="center">
+              <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty" @click="eliminar.abrir(p.nombre, p.id_pro)"></v-btn>
+            </v-col>
+          </v-row>
+        </v-card-actions>
       </v-card>
     </v-col>
   </v-container>
 
+  <ModalEliminar ref="eliminar" @confirmar=""/>
   <Notificacion ref="alerta" />
   <ModalCrearProyecto ref="formulario" @api="guardar" @api-editar="editarApi" @limpiar="limpiar" :titulo="titulo"
     :listaEquipos="equipos" />
@@ -84,6 +139,7 @@
 import DocumentoBox from '@/components/DocumentoBox.vue';
 import ImagenBox from '@/components/ImagenBox.vue';
 import ModalCrearProyecto from '@/components/modales/ModalCrearProyecto.vue';
+import ModalEliminar from '@/components/modales/ModalEliminar.vue';
 import { apiCall, uploadFilesWithFetch } from '@/utils/apiCall';
 import { computed, onMounted, ref } from 'vue';
 
@@ -91,6 +147,7 @@ import { computed, onMounted, ref } from 'vue';
 const proyectos = ref([])
 const alerta = ref([])
 const formulario = ref(null)
+const eliminar = ref(null)
 const titulo = ref('Crear proyecto')
 const equipos = ref([])
 
@@ -123,12 +180,27 @@ function recargar() {
         message: err.data?.mensaje || 'Credenciales inválidas'
       })
     });
+  apiCall('equipos')
+    .then((result) => {
+      equipos.value = result.data.equipos
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.data?.mensaje || 'Credenciales inválidas'
+      })
+    });
 }
 
 async function obtenerEquipos() {
   apiCall('equipos')
     .then((result) => {
       equipos.value = result.data.equipos
+      if (proyectos.value.length > 0) {
+        proyectos.value.forEach(p => {
+          proyectos.value.equipo = equipos.value.filter(e => e.id_equi === p.id_equipo)
+        })
+      }
       alerta.value.notify({
         type: 'success',
         title: '',

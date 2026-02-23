@@ -7,7 +7,7 @@ class proyectoM {
 
   todos() {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT id_pro, nombre, descripcion, id_equipo, estado, fecha_creacion, fecha_inicio, fecha_cierre, id_responsable, documento, imagen FROM proyecto'
+      const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, p.documento, p.imagen FROM proyecto p LEFT JOIN equipos e ON e.id_equi = p.id_equipo LEFT JOIN usuarios u ON u.id_usu = e.id_responsable;`
       db.query(sql, function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })

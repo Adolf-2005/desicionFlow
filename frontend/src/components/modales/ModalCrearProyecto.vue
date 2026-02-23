@@ -25,7 +25,7 @@
           </v-col>
           <v-col>
             <v-select v-model="record.id_equipo" label="Equipo" variant="outlined" :items="listaEquipos"
-              item-title="nombre" item-value="id_equi" autocomplete="off" density="compact">
+              item-title="nombre" item-value="id_equi" return-object autocomplete="off" density="compact">
             </v-select>
           </v-col>
           <v-col>
@@ -68,7 +68,8 @@ function enviarApi() {
   const dataFile = new FormData()
   if (record.value.nombre) dataFile.append('nombre', record.value.nombre)
   if (record.value.descripcion) dataFile.append('descripcion', record.value.descripcion)
-  if (record.value.id_equipo) dataFile.append('id_equipo', record.value.id_equipo)
+  if (record.value.id_equipo) dataFile.append('id_equipo', record.value.id_equipo.id_equi)
+  if (record.value.id_equipo) dataFile.append('id_responsable', record.value.id_equipo.id_responsable || null)
   dataFile.append('imagen', record.value.imagen || null)
   dataFile.append('documento', record.value.documento || null)
 
