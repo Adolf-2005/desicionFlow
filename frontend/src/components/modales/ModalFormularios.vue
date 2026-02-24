@@ -16,26 +16,26 @@
           <template v-for="field in fields">
             <v-col v-if="(field.type === 'text' || field.type === 'password') && (field.row === false) && !field.edit"
               :class="[field.type === 'password' ? 'd-flex' : '']">
-              <v-text-field v-model="record[field.key]" :label="field.title" variant="outlined"
+              <v-text-field v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                 :rules="[rules.required, rules.empty]" :type="field.type" autocomplete="off" :readonly="field.readonly">
               </v-text-field>
             </v-col>
 
             <v-col v-if="field.type === 'textarea'">
-              <v-textarea v-model="record[field.key]" :label="field.title" variant="outlined"
+              <v-textarea v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                 :rules="[rules.required, rules.empty]" rows="2" :type="field.type" autocomplete="off">
               </v-textarea>
             </v-col>
 
             <v-row class="px-2" v-if="(field.type === 'text' || field.type === 'password') && field.row === true">
               <v-col cols="12" sm="6">
-                <v-text-field v-model="record[field.key]" :label="field.title" variant="outlined"
+                <v-text-field v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                   :rules="[rules.required, rules.empty]" :type="field.type" autocomplete="off"
                   :readonly="field.readonly">
                 </v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
-                <v-text-field v-model="record[field.subKey]" :label="field.subTitle" variant="outlined"
+                <v-text-field v-model="record[field.subKey]" :label="field.subTitle" variant="outlined" density="compact"
                   :rules="[rules.required, rules.empty]" :type="field.subType" autocomplete="off"
                   :readonly="field.readonly">
                 </v-text-field>
@@ -44,13 +44,13 @@
 
             <v-row class="pa-2" v-if="(field.type === 'select') && field.row === true">
               <v-col cols="5" sm="3">
-                <v-select v-model="record[field.key]" :label="field.title" variant="outlined"
+                <v-select v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                   :rules="[rules.required, rules.empty]" :items="field.items" autocomplete="off"
                   :readonly="field.readonly">
                 </v-select>
               </v-col>
               <v-col cols="7" sm="9">
-                <v-text-field v-model="record[field.subKey]" :label="field.subTitle" variant="outlined"
+                <v-text-field v-model="record[field.subKey]" :label="field.subTitle" variant="outlined" density="compact"
                   :rules="[rules.required, rules.empty]" :type="field.subType" autocomplete="off"
                   :readonly="field.readonly">
                 </v-text-field>
@@ -58,13 +58,13 @@
             </v-row>
 
             <v-col v-if="(field.type === 'select') && (field.row === false) && field.object ">
-              <v-select v-model="record[field.key]" :label="field.title" variant="outlined"
+              <v-select v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                 :rules="[rules.required]" :items="field.items" :item-title="field.titleItem" :item-value="field.valueItem" :return-object="field.object">
               </v-select>
             </v-col>
           
             <v-col v-if="(field.type === 'select') && field.row === false">
-              <v-select v-model="record[field.key]" :label="field.title" variant="outlined"
+              <v-select v-model="record[field.key]" :label="field.title" variant="outlined" density="compact"
                 :rules="[rules.required]" :items="field.items">
               </v-select>
             </v-col>

@@ -9,7 +9,7 @@ export async function apiCall(endpoint, method = 'GET', data = null) {
       url: `${backendURL}/${endpoint}`,
       headers: {
         'Content-Type': 'application/json',
-        ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) // Agregar token si existe
+        ...(getToken() ? { Authorization: getToken() } : {}) // Agregar token si existe
       },
       ...(data ? { data } : {}) // Incluir datos si existen
     }
@@ -44,7 +44,7 @@ export async function uploadFilesWithFetch(endpoint, formData) {
 
     const headers = {}
     if (getToken()) {
-      headers['Authorization'] = `Bearer ${getToken()}`
+      headers['Authorization'] = getToken()
     }
     const response = await fetch(url, {
       method: 'POST',

@@ -67,7 +67,7 @@ class usuariosM {
           const token = jwt.sign({
             usuario: res[0].usuario,
             id: res[0].id_usu,
-          }, process.env.JSONWEBTOKEN, { expiresIn: '12' });
+          }, process.env.JSONWEBTOKEN, { expiresIn: '12h' });
           const cambio = res[0].change_pass == 1 ? true : false
           resolve({ status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12, cambio_clave: cambio })
         } else {

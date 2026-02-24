@@ -13,9 +13,9 @@ class proyectoC {
     })
   }
 
-  filtros(filtro) {
+  uno(id_pro) {
     return new Promise((resolve, reject) => {
-      proyectoM.filtros(filtro)
+      proyectoM.uno(id_pro)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -24,9 +24,9 @@ class proyectoC {
     })
   }
 
-  uno() {
+  filtros(filtro) {
     return new Promise((resolve, reject) => {
-      proyectoM.uno()
+      proyectoM.filtros(filtro)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -101,9 +101,9 @@ class proyectoC {
     })
   }
 
-  eliminar(id) {
+  eliminar(datos) {
     return new Promise((resolve, reject) => {
-      proyectoM.eliminar(id)
+      proyectoM.eliminar(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {

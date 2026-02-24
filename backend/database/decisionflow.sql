@@ -1,3 +1,10 @@
+-- 1. ELIMINAR Y CREAR LA BASE DE DATOS
+DROP DATABASE IF EXISTS decisionflow;
+CREATE DATABASE decisionflow;
+USE decisionflow;
+
+-- 2. ESTRUCTURA DE TABLAS
+
 -- Tabla de usuarios
 CREATE TABLE usuarios (
     id_usu VARCHAR(200) PRIMARY KEY,
@@ -18,7 +25,8 @@ CREATE TABLE equipos (
     descripcion TEXT,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     id_responsable VARCHAR(200),
-    FOREIGN KEY (id_responsable) REFERENCES usuarios(id_usu) ON DELETE SET NULL
+    FOREIGN KEY (id_responsable) REFERENCES usuarios(id_usu) ON DELETE SET NULL,
+    INDEX idx_responsable_equi (id_responsable)
 );
 
 -- Tabla de miembros de equipos
@@ -29,7 +37,8 @@ CREATE TABLE miembros (
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_equi, id_usu),
     FOREIGN KEY (id_equi) REFERENCES equipos(id_equi) ON DELETE CASCADE,
-    FOREIGN KEY (id_usu) REFERENCES usuarios(id_usu) ON DELETE CASCADE
+    FOREIGN KEY (id_usu) REFERENCES usuarios(id_usu) ON DELETE CASCADE,
+    INDEX idx_miembro_usu (id_usu)
 );
 
 -- Tabla de proyectos
@@ -70,24 +79,46 @@ CREATE TABLE decisiones (
     FOREIGN KEY (id_responsable) REFERENCES usuarios(id_usu) ON DELETE SET NULL,
     INDEX idx_proyecto (id_pro),
     INDEX idx_creador (id_creador),
-    INDEX idx_responsable (id_responsable)
+    INDEX idx_responsable_deci (id_responsable)
+);
+
+-- Tabla de valoración decisiones
+CREATE TABLE valoracion_dec (
+    id_val VARCHAR(200) PRIMARY KEY,
+    puntaje INT NOT NULL,
+    id_creador VARCHAR(200),
+    id_deci VARCHAR(200),
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_creador) REFERENCES usuarios(id_usu) ON DELETE CASCADE,
+    FOREIGN KEY (id_deci) REFERENCES decisiones(id_deci) ON DELETE CASCADE,
+    INDEX idx_creador_val (id_creador),
+    INDEX idx_deci_val (id_deci)
+);
+
+CREATE TABLE comentarios_dec (
+    id_com_dec INT AUTO_INCREMENT PRIMARY KEY,
+    id_val VARCHAR(200),
+    comentario TEXT NOT NULL,
+    FOREIGN KEY (id_val) REFERENCES valoracion_dec(id_val) ON DELETE CASCADE
 );
 
 -- Tabla de ideas
 CREATE TABLE ideas (
     id_idea VARCHAR(200) PRIMARY KEY,
-    id_deci VARCHAR(200),
+    id_pro VARCHAR(200),
     titulo VARCHAR(200) NOT NULL,
     descripcion VARCHAR(300),
-    id_creador VARCHAR(300),
+    id_creador VARCHAR(200), -- Corregido de 300 a 200 para coincidir con usuarios
     estado ENUM('activa', 'evaluada', 'descarta') DEFAULT 'activa',
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_deci) REFERENCES decisiones(id_deci) ON DELETE CASCADE,
-    INDEX idx_decision (id_deci)
+    FOREIGN KEY (id_pro) REFERENCES proyecto(id_pro) ON DELETE CASCADE,
+    FOREIGN KEY (id_creador) REFERENCES usuarios(id_usu) ON DELETE SET NULL, -- FK Agregada
+    INDEX idx_proyecto_idea (id_pro),
+    INDEX idx_creador_idea (id_creador)
 );
 
--- Tabla de valoración
-CREATE TABLE valoracion (
+-- Tabla de valoración ideas
+CREATE TABLE valoracion_idea (
     id_val VARCHAR(200) PRIMARY KEY,
     puntaje INT NOT NULL,
     id_creador VARCHAR(200),
@@ -95,22 +126,51 @@ CREATE TABLE valoracion (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_creador) REFERENCES usuarios(id_usu) ON DELETE CASCADE,
     FOREIGN KEY (id_idea) REFERENCES ideas(id_idea) ON DELETE CASCADE,
-    INDEX idx_creador (id_creador),
-    INDEX idx_idea (id_idea)
+    INDEX idx_creador_val_i (id_creador),
+    INDEX idx_idea_val (id_idea)
 );
 
--- Tabla de comentarios
-CREATE TABLE comentarios (
+-- Tabla de comentarios ideas
+CREATE TABLE comentarios_idea (
+    id_com_idea INT AUTO_INCREMENT PRIMARY KEY,
     id_val VARCHAR(200),
     comentario TEXT NOT NULL,
-    FOREIGN KEY (id_val) REFERENCES valoracion(id_val) ON DELETE CASCADE
+    FOREIGN KEY (id_val) REFERENCES valoracion_idea(id_val) ON DELETE CASCADE
 );
 
-INSERT INTO roles (id_rol, nombre) VALUES ('13ahw8q2yhr19r8hn1qe12h3891h2e91nr', 'Admin');
-INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol, change_pass) VALUES (1, 'Admin', 'Admin', 'admin', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C','Admin', 'Miembro', 0); 
+-- 3. INSERTAR DATOS (SEEDS)
 INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol, change_pass) VALUES 
-(2, 'Juan', 'Pérez', 'jperez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-10203040', 'Miembro', 0),
-(3, 'María', 'García', 'mgarcia', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-20304050', 'Miembro', 0),
-(4, 'Carlos', 'López', 'clopez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-30405060', 'Miembro', 0),
-(5, 'Ana', 'Martínez', 'amartinez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-40506070', 'Miembro', 0),
-(6, 'Luis', 'Rodríguez', 'lrodriguez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-50607080', 'Miembro', 0);
+('1', 'Admin', 'Admin', 'admin', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C','Admin', 'Miembro', 0),
+('2', 'Juan', 'Pérez', 'jperez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-10203040', 'Miembro', 0),
+('3', 'María', 'García', 'mgarcia', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-20304050', 'Miembro', 0),
+('4', 'Carlos', 'López', 'clopez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-30405060', 'Miembro', 0),
+('5', 'Ana', 'Martínez', 'amartinez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-40506070', 'Miembro', 0),
+('6', 'Luis', 'Rodríguez', 'lrodriguez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-50607080', 'Miembro', 0),
+('7', 'Elena', 'Torres', 'etorres', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-60708090', 'Auditor', 0),
+('8', 'Roberto', 'Sanz', 'rsanz', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-70809010', 'Admin', 0),
+('9', 'Lucía', 'Méndez', 'lmendez', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-80901020', 'Miembro', 0),
+('10', 'Ricardo', 'Díaz', 'rdiaz', '$2b$10$QxUMeBppML2Q2QEWQvFLxOC8fr47UPuY.25CEADzhZHKWX77e15/C', 'V-90102030', 'Miembro', 0);
+
+INSERT INTO equipos (id_equi, nombre, descripcion, id_responsable) VALUES 
+('EQUI-001', 'Equipo de Desarrollo', 'Encargados de la programación y mantenimiento del software.', '1'),
+('EQUI-002', 'Equipo de Diseño UX/UI', 'Enfocados en la experiencia de usuario y diseño visual.', '3'),
+('EQUI-003', 'Equipo de Calidad (QA)', 'Aseguramiento de la calidad y pruebas de estrés.', '7');
+
+INSERT INTO miembros (id_equi, id_usu, rol, fecha_ingreso) VALUES 
+('EQUI-001', '1', 'Jefe', CURRENT_TIMESTAMP),
+('EQUI-001', '2', 'Miembro', CURRENT_TIMESTAMP),
+('EQUI-001', '4', 'Asistente', CURRENT_TIMESTAMP),
+('EQUI-002', '3', 'Jefe', CURRENT_TIMESTAMP),
+('EQUI-002', '5', 'Miembro', CURRENT_TIMESTAMP),
+('EQUI-002', '9', 'Miembro', CURRENT_TIMESTAMP),
+('EQUI-003', '7', 'Jefe', CURRENT_TIMESTAMP),
+('EQUI-003', '6', 'Miembro', CURRENT_TIMESTAMP),
+('EQUI-003', '10', 'Asistente', CURRENT_TIMESTAMP);
+
+INSERT INTO `proyecto` (`id_pro`, `nombre`, `descripcion`, `id_equipo`, `estado`, `fecha_creacion`, `fecha_inicio`, `fecha_cierre`, `id_responsable`, `documento`, `imagen`) VALUES 
+('PRJ-001', 'Rediseño de Interfaz', 'Actualización estética del dashboard principal.', 'EQUI-002', 'Activo', CURRENT_TIMESTAMP, '2024-01-15 08:00:00', NULL, '3', NULL, NULL),
+('PRJ-002', 'Migración de Servidores', 'Mover la infraestructura a una nueva arquitectura en la nube.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-02-01 10:30:00', NULL, '1', NULL, NULL),
+('PRJ-003', 'Campaña Marketing Q1', 'Planificación de redes sociales para el primer trimestre.', NULL, 'Completado', CURRENT_TIMESTAMP, '2023-12-01 09:00:00', '2024-02-20 17:00:00', NULL, NULL, NULL),
+('PRJ-004', 'App Móvil Versión 2.0', 'Desarrollo de nuevas funcionalidades nativas para iOS y Android.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-03-01 08:00:00', NULL, '4', NULL, NULL),
+('PRJ-005', 'Auditoría de Seguridad', 'Revisión anual de protocolos y vulnerabilidades.', 'EQUI-003', 'Cancelado', CURRENT_TIMESTAMP, '2024-01-10 11:00:00', '2024-01-15 15:00:00', '7', NULL, NULL),
+('PRJ-006', 'Optimización de Base de Datos', 'Limpieza de logs y optimización de índices pesados.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-02-15 14:00:00', NULL, '1', NULL, NULL);

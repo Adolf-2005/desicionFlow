@@ -47,7 +47,7 @@ const props = defineProps({
   },
   documentName: {
     type: String,
-    default: 'documento'
+    default: ''
   }
 })
 
@@ -60,10 +60,6 @@ const displayName = computed(() => {
   const fileName = urlParts[urlParts.length - 1]
   return fileName.replace(/^[^-]+-\d+-\d+\./, '').replace(/\.\w+$/, '') || 'documento.docx'
 })
-
-const handleView = () => {
-  emit('view-document', props.documentUrl)
-}
 
 const handleDownload = () => {
   emit('download-document', props.documentUrl)

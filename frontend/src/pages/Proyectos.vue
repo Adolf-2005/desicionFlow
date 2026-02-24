@@ -10,127 +10,131 @@
     <v-card-title>
       Lista de proyectos
     </v-card-title>
-    <v-col v-for="(p, index) in proyectos" :key="p.id_pro">
-      <v-card elevation="5" prepend-icon="mdi-package">
-        <template #title>
-          <span class="text-capitalize">
-            {{ p.nom_pro }}
-          </span>
-        </template>
-        <template v-slot:subtitle>
-          <p class="text-wrap">
-            Fecha de creación: {{ formatDate(p.fecha_creacion) }}
-          </p>
-        </template>
-        <v-card-text style="max-height: 500px; overflow: auto;">
-          <v-row>
-            <v-col cols="12" md="7" class="text-subtitle-1 d-flex flex-column ga-2">
-              <v-list>
-                <v-list-item>
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-text-box</v-icon>
-                    </v-avatar>
-                  </template>
-                  {{ p.des_pro }}
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-calendar-import</v-icon>
-                    </v-avatar>
-                  </template>
-                  Fecha de inicio
-                  <span v-if="p.fecha_inicio">
-                    {{ formatDate(p.fecha_inicio) }}
-                  </span>
-                  <span v-else class="font-italic font-weight-bold">
-                    Sin fecha establecida
-                  </span>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-sort-calendar-ascending</v-icon>
-                    </v-avatar>
-                  </template>
-                  Fecha de cierre
-                  <span v-if="p.fecha_cierre">
-                    {{ formatDate(p.fecha_cierre) }}
-                  </span>
-                  <span v-else class="font-italic font-weight-bold">
-                    Sin fecha establecida
-                  </span>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-list-status</v-icon>
-                    </v-avatar>
-                  </template>
-                  Estado <v-chip :color="estadoColor(p.estado)">{{ p.estado }}</v-chip>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-microsoft-teams</v-icon>
-                    </v-avatar>
-                  </template>
-                  <div class="d-flex flex-column justify-start align-start">
-                    <span>
-                      Equipo asignado
-                      <v-chip :color="p.nom_equi ? 'success' : 'warning'" tonal>
-                        {{ p.nom_equi ? p.nom_equi : 'Sin equipo asignado' }}
-                      </v-chip>
+    <div v-if="proyectos.length">
+      <v-col v-for="(p, index) in proyectos" :key="p.id_pro">
+        <v-card elevation="5" prepend-icon="mdi-package">
+          <template #title>
+            <span class="text-capitalize">
+              {{ p.nom_pro }}
+            </span>
+          </template>
+          <template v-slot:subtitle>
+            <p class="text-wrap">
+              Fecha de creación: {{ formatDate(p.fecha_creacion) }}
+            </p>
+          </template>
+          <v-card-text style="max-height: 500px; overflow: auto;">
+            <v-row>
+              <v-col cols="12" md="7" class="text-subtitle-1 d-flex flex-column ga-2">
+                <v-list>
+                  <v-list-item>
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-text-box</v-icon>
+                      </v-avatar>
+                    </template>
+                    {{ p.des_pro }}
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-calendar-import</v-icon>
+                      </v-avatar>
+                    </template>
+                    Fecha de inicio
+                    <span v-if="p.fecha_inicio">
+                      {{ formatDate(p.fecha_inicio) }}
                     </span>
-                    <small>{{ p.des_equi ? p.des_equi : '' }}</small>
-                  </div>
-                </v-list-item>
-                <v-list-item :title="p.nom_lider" :subtitle="'@' + p.usuario" v-if="p.id_responsable">
-                  <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
-                    <v-avatar color="primary" variant="tonal" size="40">
-                      <v-icon>mdi-account-tie-hat</v-icon>
-                    </v-avatar>
-                  </template>
-                </v-list-item>
-                <v-list-item>
-                  <DocumentoBox :document-url="p.documento" :document-name="p.nombre" />
-                </v-list-item>
-              </v-list>
-            </v-col>
-            <v-col cols="12" md="5" align-self="center">
-              <ImagenBox :imageUrl="p.imagen" :alt="p.nombre" />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-row class="pt-2">
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus" @click="editarProyecto(p)"></v-btn>
-            </v-col>
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click="estado(p)"></v-btn>
-            </v-col>
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert"
-                @click="lideres(p)"></v-btn>
-            </v-col>
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline"
-                @click="equipoModal(p)"></v-btn>
-            </v-col>
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock"
-                @click="fechas(p)"></v-btn>
-            </v-col>
-            <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty"
-                @click="eliminar.abrir(p.nombre, p.id_pro)"></v-btn>
-            </v-col>
-          </v-row>
-        </v-card-actions>
-      </v-card>
-    </v-col>
+                    <span v-else class="font-italic font-weight-bold">
+                      Sin fecha establecida
+                    </span>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-sort-calendar-ascending</v-icon>
+                      </v-avatar>
+                    </template>
+                    Fecha de cierre
+                    <span v-if="p.fecha_cierre">
+                      {{ formatDate(p.fecha_cierre) }}
+                    </span>
+                    <span v-else class="font-italic font-weight-bold">
+                      Sin fecha establecida
+                    </span>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-list-status</v-icon>
+                      </v-avatar>
+                    </template>
+                    Estado <v-chip :color="estadoColor(p.estado)">{{ p.estado }}</v-chip>
+                  </v-list-item>
+                  <v-list-item>
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-microsoft-teams</v-icon>
+                      </v-avatar>
+                    </template>
+                    <div class="d-flex flex-column justify-start align-start">
+                      <span>
+                        Equipo asignado
+                        <v-chip :color="p.nom_equi ? 'success' : 'warning'" tonal>
+                          {{ p.nom_equi ? p.nom_equi : 'Sin equipo asignado' }}
+                        </v-chip>
+                      </span>
+                      <small>{{ p.des_equi ? p.des_equi : '' }}</small>
+                    </div>
+                  </v-list-item>
+                  <v-list-item :title="p.nom_lider" :subtitle="'@' + p.usuario" v-if="p.id_responsable">
+                    <template v-slot:prepend v-if="$vuetify.display.mdAndUp">
+                      <v-avatar color="primary" variant="tonal" size="40">
+                        <v-icon>mdi-account-tie-hat</v-icon>
+                      </v-avatar>
+                    </template>
+                  </v-list-item>
+                  <v-list-item>
+                    <DocumentoBox :document-url="p.documento" :documentName="p.nom_pro" />
+                  </v-list-item>
+                </v-list>
+              </v-col>
+              <v-col cols="12" md="5" align-self="center">
+                <ImagenBox :imageUrl="p.imagen" :alt="p.nombre" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+          <v-card-actions>
+            <v-row class="pt-2">
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus"
+                  @click="editarProyecto(p)"></v-btn>
+              </v-col>
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click="estado(p)"></v-btn>
+              </v-col>
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert"
+                  @click="lideres(p)"></v-btn>
+              </v-col>
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline"
+                  @click="equipoModal(p)"></v-btn>
+              </v-col>
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock"
+                  @click="fechas(p)"></v-btn>
+              </v-col>
+              <v-col cols="auto" align="center" justify="center">
+                <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty"
+                  @click="eliminar.abrir(p.nombre, { id_pro: p.id_pro, imagen: p.imagen, documento: p.documento })"></v-btn>
+              </v-col>
+            </v-row>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </div>
+    <Vacio v-else :titulo="'Proyectos'"/>
   </v-container>
 
   <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
@@ -260,8 +264,22 @@ async function guardar(formData) {
   await recargar()
 }
 
-function eliminarProyecto(id) {
-  apiCall('proyectos/eliminar', 'DELETE', { id_pro: id })
+function eliminarProyecto(datos) {
+  let urlDoc = null
+  let urlImg = null
+  if (datos.documento) {
+    urlDoc = datos.documento.split('/')
+  }
+
+  if (datos.imagen) {
+    urlImg = datos.imagen.split('/')
+  }
+  const obj = {
+    imagen: urlImg ? urlImg.pop() : null,
+    documento: urlDoc ? urlDoc.pop() : null,
+    id_pro: datos.id_pro
+  }
+  apiCall('proyectos/eliminar', 'DELETE', obj)
     .then((result) => {
       alerta.value.notify({
         type: 'success',

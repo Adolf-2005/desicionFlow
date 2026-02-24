@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const db = require('../database/connection')
+const fs = require('fs').promises;
+const path = require('path');
 require('dotenv').config()
 
 
@@ -16,6 +18,85 @@ class proyectoM {
           return resolve({ status: 200, mensaje: 'No hay proyectos activos' })
         }
         resolve({ status: 200, mensaje: 'Proyectos consultados con éxito', proyectos: res })
+      })
+    })
+  }
+
+  equipos(id_equipo) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM equipos WHERE id_equi = ?'
+      const sqlMiembro = 'SELECT m.id_equi, m.id_usu, m.rol, m.fecha_ingreso, u.nombre, u.apellido, u.usuario, u.cedula FROM miembros m INNER JOIN usuarios u ON u.id_usu = m.id_usu WHERE m.id_equi = ?'
+      db.beginTransaction(async (err) => {
+        if (err) {
+          return reject(err)
+        }
+        try {
+          const miembros = await new Promise((resolve, reject) => {
+            db.query(sqlMiembro, [id_equipo], function (err, res) {
+              if (err) {
+                return reject({ status: 500, mensaje: err })
+              }
+              resolve({ status: 200, mensaje: 'Exito de consulta', data: res })
+            })
+          })
+          db.query(sql, [id_equipo], function (err, res) {
+            if (err) {
+              return reject({ status: 500, mensaje: err })
+            }
+            const equipos = res
+            if (res.length) {
+              equipos[0].miembros = miembros.data
+              resolve({ status: 200, mensaje: 'Exito de consulta', data: equipos })
+            } else {
+              resolve({ mensaje: 'No hay equipos para mostrar', data: equipos, status: 200 })
+            }
+          })
+        } catch (error) {
+          reject({ status: 500, mensaje: error })
+        }
+      })
+    })
+  }
+
+  uno(id_pro) {
+    return new Promise((resolve, reject) => {
+      console.log(id_pro)
+      const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, p.documento, p.imagen FROM proyecto p LEFT JOIN equipos e ON e.id_equi = p.id_equipo LEFT JOIN usuarios u ON u.id_usu = p.id_responsable WHERE p.id_pro = ?`
+      const sqlDec = 'SELECT d.id_deci, d.id_pro, d.titulo, d.descripcion, d.id_responsable, d.estado, d.valoracion, d.resultado, d.impacto, d.observacion, d.fecha, d.id_creador, u.nombre, u.apellido, u.usuario FROM decisiones d INNER JOIN usuarios u ON u.id_usu = d.id_creador WHERE id_pro = ?'
+      const sqlComDec = 'SELECT v.id_val, v.puntaje, v.id_deci, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_dec FROM valoracion_dec v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_dec c ON V.id_val = c.id_val'
+      const sqlComIdea = 'SELECT v.id_val, v.puntaje, v.id_idea, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_idea FROM valoracion_idea v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_idea c ON V.id_val = c.id_val'
+
+      db.beginTransaction(async (err) => {
+        if (err) {
+          return reject(err)
+        }
+        try {
+          const decisiones = await new Promise((resolve, reject) => {
+            db.query(sqlDec, [id_pro], async (err, res) => {
+              if (err) {
+                return reject({ status: 500, mensaje: err })
+              }
+              if (!res.length) {
+                return resolve({ status: 200, mensaje: 'No hay decisiones activas', data:res })
+              }
+              resolve({ status: 200, mensaje: 'Desiciones consultadas con éxito', data: res })
+            })
+          })
+
+          db.query(sql, [id_pro], async (err, res) => {
+            if (err) {
+              return reject({ status: 500, mensaje: err })
+            }
+            if (!res.length) {
+              return resolve({ status: 200, mensaje: 'No hay proyectos activos' })
+            }
+            const equipo = await this.equipos(res[0].id_equipo)
+            res[0].equipo = equipo.data
+            resolve({ status: 200, mensaje: 'Proyecto consultado con éxito', proyecto: res, des: decisiones.data })
+          })
+        } catch (error) {
+          reject({ status: 500, mensaje: error })
+        }
       })
     })
   }
@@ -69,7 +150,7 @@ class proyectoM {
   editar(datos, files) {
     return new Promise((resolve, reject) => {
       const { nombre, descripcion, id_equipo, id_responsable, id_pro } = datos
-      const { foto, documento } = files
+      const { imagen, documento } = files
       let editPro = [nombre, descripcion]
       let edit = []
       let imagenUrl
@@ -82,8 +163,8 @@ class proyectoM {
         edit.push('id_responsable = ?')
         editPro.push(id_responsable)
       }
-      if (foto) {
-        imagenUrl = process.env.PATH_IMAGEN + foto[0].filename
+      if (imagen) {
+        imagenUrl = process.env.PATH_IMAGEN + imagen[0].filename
         edit.push('imagen = ?')
         editPro.push(imagenUrl)
       }
@@ -95,18 +176,15 @@ class proyectoM {
       editPro.push(id_pro)
       const campos = ', ' + edit.join(',')
       const sql = `UPDATE proyecto SET nombre = ?, descripcion = ? ${campos} WHERE id_pro = ?`
-      console.log('paso 2')
 
       db.query(sql, editPro, function (err, res) {
         if (err) {
-          console.log('error: ', err)
-
           return reject({ status: 500, mensaje: err })
         }
         if (res.affectedRows === 0) {
-          console.log(res)
           return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
         }
+
         resolve({ status: 200, mensaje: 'Proyecto editado con éxito' })
       })
     })
@@ -190,15 +268,34 @@ class proyectoM {
     })
   }
 
-  eliminar(id) {
+  eliminar(datos) {
     return new Promise((resolve, reject) => {
+      const { id_pro, imagen, documento } = datos
       const sql = 'DELETE FROM proyecto WHERE id_pro = ?'
-      db.query(sql, [id], function (err, res) {
+      db.query(sql, [id_pro], async function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
         }
         if (res.affectedRows === 0) {
           return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
+        }
+        if (imagen) {
+          try {
+            const nombreImagen = path.basename(imagen);
+            const rutaImagen = path.join(__dirname, '..', 'uploads', 'images', nombreImagen);
+            await fs.unlink(rutaImagen);
+          } catch (error) {
+            console.warn("La imagen no existía en la carpeta, pero el registro se borró.");
+          }
+        }
+        if (documento) {
+          try {
+            const nombreDoc = path.basename(documento);
+            const rutaDoc = path.join(__dirname, '..', 'uploads', 'documents', nombreDoc);
+            await fs.unlink(rutaDoc);
+          } catch (error) {
+            console.warn("El documento no existía en la carpeta.");
+          }
         }
         resolve({ status: 200, mensaje: 'Proyecto eliminado con éxito' })
       })

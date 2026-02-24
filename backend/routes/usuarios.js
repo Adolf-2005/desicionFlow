@@ -22,7 +22,7 @@ router.post('/crear', protegerRuta, function (req, res, next) {
     });
 });
 
-router.post('/login', protegerRuta, function (req, res, next) {
+router.post('/login', function (req, res, next) {
   usuariosC.login(req.body)
     .then((result) => {
       res.status(result.status).json(result)

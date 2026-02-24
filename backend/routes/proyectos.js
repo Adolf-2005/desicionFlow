@@ -14,6 +14,15 @@ router.get('/', protegerRuta, function (req, res, next) {
     });
 });
 
+router.get('/uno', protegerRuta, function (req, res, next) {
+  proyectoC.uno(req.body.id_pro)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
 router.post('/filtros', protegerRuta, function (req, res, next) {
   proyectoC.filtros(req.body.estado)
     .then((result) => {
@@ -84,7 +93,7 @@ router.put('/fechas', protegerRuta, function (req, res, next) {
 });
 
 router.delete('/eliminar', protegerRuta, function (req, res, next) {
-  proyectoC.eliminar(req.body.id_pro)
+  proyectoC.eliminar(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
