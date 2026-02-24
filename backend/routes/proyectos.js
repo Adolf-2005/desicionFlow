@@ -3,8 +3,9 @@ var express = require('express');
 var router = express.Router();
 var proyectoC = require('../controllers/proyectoC')
 const upload = require('../utils/upload')
+const protegerRuta = require('../middlewares/auth')
 
-router.get('/', function (req, res, next) {
+router.get('/', protegerRuta, function (req, res, next) {
   proyectoC.todos()
     .then((result) => {
       res.status(result.status).json(result)
@@ -13,7 +14,7 @@ router.get('/', function (req, res, next) {
     });
 });
 
-router.post('/filtros', function (req, res, next) {
+router.post('/filtros', protegerRuta, function (req, res, next) {
   proyectoC.filtros(req.body.estado)
     .then((result) => {
       res.status(result.status).json(result)
@@ -22,9 +23,9 @@ router.post('/filtros', function (req, res, next) {
     });
 });
 
-router.post('/crear', upload.fields([
-  { name: 'imagen', maxCount: 1 },
-  { name: 'documento', maxCount: 1 }
+router.post('/crear', protegerRuta, upload.fields([
+  { name: 'imagen', protegerRuta, maxCount: 1 },
+  { name: 'documento', protegerRuta, maxCount: 1 }
 ]), function (req, res, next) {
   proyectoC.crear(req.body, req.files)
     .then((result) => {
@@ -34,9 +35,9 @@ router.post('/crear', upload.fields([
     });
 });
 
-router.post('/editar', upload.fields([
-  { name: 'imagen', maxCount: 1 },
-  { name: 'documento', maxCount: 1 }
+router.post('/editar', protegerRuta, upload.fields([
+  { name: 'imagen', protegerRuta, maxCount: 1 },
+  { name: 'documento', protegerRuta, maxCount: 1 }
 ]), function (req, res, next) {
   proyectoC.editar(req.body, req.files)
     .then((result) => {
@@ -46,7 +47,7 @@ router.post('/editar', upload.fields([
     });
 });
 
-router.put('/estado', function (req, res, next) {
+router.put('/estado', protegerRuta, function (req, res, next) {
   proyectoC.cambiarEstado(req.body)
     .then((result) => {
       res.status(result.status).json(result)
@@ -55,7 +56,7 @@ router.put('/estado', function (req, res, next) {
     });
 });
 
-router.put('/lider', function (req, res, next) {
+router.put('/lider', protegerRuta, function (req, res, next) {
   proyectoC.cambiarLider(req.body)
     .then((result) => {
       res.status(result.status).json(result)
@@ -64,7 +65,7 @@ router.put('/lider', function (req, res, next) {
     });
 });
 
-router.put('/cambiarEquipo', function (req, res, next) {
+router.put('/cambiarEquipo', protegerRuta, function (req, res, next) {
   proyectoC.cambiarEquipo(req.body)
     .then((result) => {
       res.status(result.status).json(result)
@@ -73,7 +74,7 @@ router.put('/cambiarEquipo', function (req, res, next) {
     });
 });
 
-router.put('/fechas', function (req, res, next) {
+router.put('/fechas', protegerRuta, function (req, res, next) {
   proyectoC.cambiarFechas(req.body)
     .then((result) => {
       res.status(result.status).json(result)
@@ -82,7 +83,7 @@ router.put('/fechas', function (req, res, next) {
     });
 });
 
-router.delete('/eliminar', function (req, res, next) {
+router.delete('/eliminar', protegerRuta, function (req, res, next) {
   proyectoC.eliminar(req.body.id_pro)
     .then((result) => {
       res.status(result.status).json(result)
