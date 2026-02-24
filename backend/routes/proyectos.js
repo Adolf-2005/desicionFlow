@@ -34,7 +34,7 @@ router.post('/crear', upload.fields([
     });
 });
 
-router.put('/editar', upload.fields([
+router.post('/editar', upload.fields([
   { name: 'imagen', maxCount: 1 },
   { name: 'documento', maxCount: 1 }
 ]), function (req, res, next) {
@@ -48,6 +48,42 @@ router.put('/editar', upload.fields([
 
 router.put('/estado', function (req, res, next) {
   proyectoC.cambiarEstado(req.body)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
+router.put('/lider', function (req, res, next) {
+  proyectoC.cambiarLider(req.body)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
+router.put('/cambiarEquipo', function (req, res, next) {
+  proyectoC.cambiarEquipo(req.body)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
+router.put('/fechas', function (req, res, next) {
+  proyectoC.cambiarFechas(req.body)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
+router.delete('/eliminar', function (req, res, next) {
+  proyectoC.eliminar(req.body.id_pro)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {

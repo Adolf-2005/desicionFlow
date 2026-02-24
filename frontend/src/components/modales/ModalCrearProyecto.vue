@@ -37,8 +37,12 @@
               prepend-icon="mdi-file-document-plus"
               accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></v-file-input>
           </v-col>
-          <v-btn color="primary" size="large" variant="elevated" block rounded="pill" :loading="cargando"
+          <v-btn v-if="!editar" color="primary" size="large" variant="elevated" block rounded="pill" :loading="cargando"
             :disabled="!valido" @click="enviarApi">
+            {{ titulo }}
+          </v-btn>
+          <v-btn v-else color="primary" size="large" variant="elevated" block rounded="pill" :loading="cargando"
+            :disabled="!valido" @click="enviarApiEditar">
             {{ titulo }}
           </v-btn>
         </v-form>
@@ -53,6 +57,7 @@ import { rules } from '@/utils/rules';
 import { ref } from 'vue';
 
 const show = ref(false)
+const editar = ref(false)
 const valido = ref(null)
 const record = ref({})
 const cargando = ref(false)
@@ -72,16 +77,19 @@ function enviarApi() {
   if (record.value.id_equipo) dataFile.append('id_responsable', record.value.id_equipo.id_responsable || null)
   dataFile.append('imagen', record.value.imagen || null)
   dataFile.append('documento', record.value.documento || null)
-
-  for (let pair of dataFile.entries()) {
-    console.log(pair[0] + ': ' + pair[1]);
-  }
-
   emits('api', dataFile)
 }
 
 function enviarApiEditar() {
-  emits('apiEditar', record.value)
+  const dataFile = new FormData()
+  if (editar.value) dataFile.append('id_pro', record.value.id_pro)
+  if (record.value.nombre) dataFile.append('nombre', record.value.nombre)
+  if (record.value.descripcion) dataFile.append('descripcion', record.value.descripcion)
+  if (record.value.id_equipo) dataFile.append('id_equipo', record.value.id_equipo.id_equi)
+  if (record.value.id_equipo) dataFile.append('id_responsable', record.value.id_equipo.id_responsable || null)
+  dataFile.append('imagen', record.value.imagen || null)
+  dataFile.append('documento', record.value.documento || null)
+  emits('apiEditar', dataFile)
 }
 
 function abrir(datos = {}) {
@@ -95,6 +103,6 @@ function cerrar() {
   emits('limpiar')
 }
 
-defineExpose({ abrir, cerrar, record })
+defineExpose({ abrir, cerrar, record, editar })
 
 </script>

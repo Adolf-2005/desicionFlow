@@ -20,6 +20,7 @@ declare module 'vue' {
     ModalCrearProyecto: typeof import('./src/components/modales/ModalCrearProyecto.vue')['default']
     ModalEliminar: typeof import('./src/components/modales/ModalEliminar.vue')['default']
     ModalFormularios: typeof import('./src/components/modales/ModalFormularios.vue')['default']
+    ModalStatusFechas: typeof import('./src/components/modales/ModalStatusFechas.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     Notificacion: typeof import('./src/components/Notificacion.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

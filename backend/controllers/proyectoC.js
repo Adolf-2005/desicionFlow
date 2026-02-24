@@ -67,10 +67,10 @@ class proyectoC {
         });
     })
   }
-
-  actualizarImagen() {
+  
+  cambiarLider(datos) {
     return new Promise((resolve, reject) => {
-      proyectoM.actualizarImagen()
+      proyectoM.cambiarLider(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -79,9 +79,20 @@ class proyectoC {
     })
   }
 
-  actualizarDocumento() {
+  cambiarEquipo(datos) {
     return new Promise((resolve, reject) => {
-      proyectoM.actualizarDocumento()
+      proyectoM.cambiarEquipo(datos)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
+ 
+  cambiarFechas(datos) {
+    return new Promise((resolve, reject) => {
+      proyectoM.cambiarFechas(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
@@ -90,6 +101,16 @@ class proyectoC {
     })
   }
 
+  eliminar(id) {
+    return new Promise((resolve, reject) => {
+      proyectoM.eliminar(id)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
 }
 
 module.exports = new proyectoC();

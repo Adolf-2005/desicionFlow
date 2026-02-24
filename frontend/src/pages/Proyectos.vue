@@ -22,7 +22,7 @@
             Fecha de creación: {{ formatDate(p.fecha_creacion) }}
           </p>
         </template>
-        <v-card-text>
+        <v-card-text style="max-height: 500px; overflow: auto;">
           <v-row>
             <v-col cols="12" md="7" class="text-subtitle-1 d-flex flex-column ga-2">
               <v-list>
@@ -44,7 +44,7 @@
                   <span v-if="p.fecha_inicio">
                     {{ formatDate(p.fecha_inicio) }}
                   </span>
-                  <span class="font-italic font-weight-bold">
+                  <span v-else class="font-italic font-weight-bold">
                     Sin fecha establecida
                   </span>
                 </v-list-item>
@@ -58,7 +58,7 @@
                   <span v-if="p.fecha_cierre">
                     {{ formatDate(p.fecha_cierre) }}
                   </span>
-                  <span class="font-italic font-weight-bold">
+                  <span v-else class="font-italic font-weight-bold">
                     Sin fecha establecida
                   </span>
                 </v-list-item>
@@ -106,22 +106,26 @@
         <v-card-actions>
           <v-row class="pt-2">
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus" @click="formulario.abrir()"></v-btn>
+              <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus" @click="editarProyecto(p)"></v-btn>
             </v-col>
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click=""></v-btn>
+              <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click="estado(p)"></v-btn>
             </v-col>
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert" @click=""></v-btn>
+              <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert"
+                @click="lideres(p)"></v-btn>
             </v-col>
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline" @click=""></v-btn>
+              <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline"
+                @click="equipoModal(p)"></v-btn>
             </v-col>
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock" @click=""></v-btn>
+              <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock"
+                @click="fechas(p)"></v-btn>
             </v-col>
             <v-col cols="auto" align="center" justify="center">
-              <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty" @click="eliminar.abrir(p.nombre, p.id_pro)"></v-btn>
+              <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty"
+                @click="eliminar.abrir(p.nombre, p.id_pro)"></v-btn>
             </v-col>
           </v-row>
         </v-card-actions>
@@ -129,7 +133,8 @@
     </v-col>
   </v-container>
 
-  <ModalEliminar ref="eliminar" @confirmar=""/>
+  <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
+  <ModalStatusFechas ref="statusFecha" :listaEquipos="equipos" :listaUsuarios="usuarios" @recargar="recargar" />
   <Notificacion ref="alerta" />
   <ModalCrearProyecto ref="formulario" @api="guardar" @api-editar="editarApi" @limpiar="limpiar" :titulo="titulo"
     :listaEquipos="equipos" />
@@ -140,16 +145,19 @@ import DocumentoBox from '@/components/DocumentoBox.vue';
 import ImagenBox from '@/components/ImagenBox.vue';
 import ModalCrearProyecto from '@/components/modales/ModalCrearProyecto.vue';
 import ModalEliminar from '@/components/modales/ModalEliminar.vue';
-import { apiCall, uploadFilesWithFetch } from '@/utils/apiCall';
+import ModalStatusFechas from '@/components/modales/ModalStatusFechas.vue';
+import { apiCall, apiCallFiles, uploadFilesWithFetch } from '@/utils/apiCall';
 import { onMounted, ref } from 'vue';
 
 
 const proyectos = ref([])
 const alerta = ref([])
 const formulario = ref(null)
+const statusFecha = ref(null)
 const eliminar = ref(null)
 const titulo = ref('Crear proyecto')
 const equipos = ref([])
+const usuarios = ref([])
 
 async function obtenerProyectos() {
   apiCall('proyectos')
@@ -164,7 +172,7 @@ async function obtenerProyectos() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -177,7 +185,7 @@ function recargar() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
   apiCall('equipos')
@@ -187,7 +195,17 @@ function recargar() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+  apiCall('usuarios')
+    .then((result) => {
+      usuarios.value = result.data.usuarios
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -201,16 +219,24 @@ async function obtenerEquipos() {
           proyectos.value.equipo = equipos.value.filter(e => e.id_equi === p.id_equipo)
         })
       }
-      alerta.value.notify({
-        type: 'success',
-        title: '',
-        message: result.data?.mensaje || ''
-      })
     }).catch((err) => {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+async function obtenerUsuarios() {
+  apiCall('usuarios')
+    .then((result) => {
+      usuarios.value = result.data.usuarios
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -227,17 +253,47 @@ async function guardar(formData) {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
   formulario.value.cerrar()
   await recargar()
 }
 
-async function editarApi() {
-  apiCall('proyectos')
+function eliminarProyecto(id) {
+  apiCall('proyectos/eliminar', 'DELETE', { id_pro: id })
     .then((result) => {
-      proyectos.value = result.data.proyectos
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      eliminar.value.cerrar()
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function editarProyecto(data) {
+  const record = {
+    id_pro: data.id_pro,
+    nombre: data.nom_pro,
+    descripcion: data.des_pro,
+    id_equipo: equipos.value.find(e => e.id_equi == data.id_equipo),
+  }
+  formulario.value.editar = true
+  titulo.value = 'Editar proyecto'
+  formulario.value.abrir(record)
+}
+
+async function editarApi(formData) {
+  uploadFilesWithFetch('proyectos/editar', formData)
+    .then((result) => {
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -247,13 +303,53 @@ async function editarApi() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
+  formulario.value.cerrar()
+  await recargar()
 }
 
 function limpiar() {
   titulo.value = 'Crear proyecto'
+}
+
+function equipoModal(data) {
+  const record = {
+    id_pro: data.id_pro,
+    id_equipo: equipos.value.find(e => e.id_equi === data.id_equipo)
+  }
+  statusFecha.value.abrirEquipo(record)
+}
+
+function estado(data) {
+  const record = {
+    id_pro: data.id_pro,
+    estado: data.estado || null,
+  }
+  statusFecha.value.abrirEstado(record)
+}
+
+function fechas(data) {
+  const aFormatoInput = (fecha) => {
+    if (!fecha) return null;
+    const d = new Date(fecha);
+    return d.toISOString().split('T')[0];
+  };
+  const record = {
+    id_pro: data.id_pro,
+    inicio: aFormatoInput(data.fecha_inicio),
+    cierre: aFormatoInput(data.fecha_cierre)
+  };
+  statusFecha.value.abrirFechas(record)
+}
+
+function lideres(data) {
+  const record = {
+    id_pro: data.id_pro,
+    id_responsable: usuarios.value.find(e => e.id_usu === data.id_responsable) || null,
+  }
+  statusFecha.value.abrirLider(record)
 }
 
 // Utilidades
@@ -269,8 +365,8 @@ const formatDate = (dateString) => {
 const estadoColor = (status) => {
   return {
     'Activo': 'success',
-    'Inactivo': 'error',
-    'Pendiente': 'warning'
+    'Cancelado': 'error',
+    'Completado': 'primary'
   }[status] || 'status-default'
 }
 
@@ -278,6 +374,7 @@ const estadoColor = (status) => {
 onMounted(() => {
   obtenerProyectos()
   obtenerEquipos()
+  obtenerUsuarios()
 })
 
 </script>

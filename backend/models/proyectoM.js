@@ -7,7 +7,7 @@ class proyectoM {
 
   todos() {
     return new Promise((resolve, reject) => {
-      const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, p.documento, p.imagen FROM proyecto p LEFT JOIN equipos e ON e.id_equi = p.id_equipo LEFT JOIN usuarios u ON u.id_usu = e.id_responsable;`
+      const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, p.documento, p.imagen FROM proyecto p LEFT JOIN equipos e ON e.id_equi = p.id_equipo LEFT JOIN usuarios u ON u.id_usu = p.id_responsable;`
       db.query(sql, function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
@@ -95,11 +95,16 @@ class proyectoM {
       editPro.push(id_pro)
       const campos = ', ' + edit.join(',')
       const sql = `UPDATE proyecto SET nombre = ?, descripcion = ? ${campos} WHERE id_pro = ?`
-      db.query(sql, insert, function (err, res) {
+      console.log('paso 2')
+
+      db.query(sql, editPro, function (err, res) {
         if (err) {
+          console.log('error: ', err)
+
           return reject({ status: 500, mensaje: err })
         }
         if (res.affectedRows === 0) {
+          console.log(res)
           return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
         }
         resolve({ status: 200, mensaje: 'Proyecto editado con éxito' })
@@ -118,32 +123,88 @@ class proyectoM {
         if (res.affectedRows === 0) {
           return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
         }
-        resolve({ status: 200, mensaje: 'Proyecto editado con éxito' })
+        resolve({ status: 200, mensaje: 'Estado cambiado con éxito' })
       })
     })
   }
 
-  actualizarImagen(datos) {
+  cambiarLider(datos) {
     return new Promise((resolve, reject) => {
-      const { estado, id_pro } = datos
-      const sql = `UPDATE proyecto SET estado = ? WHERE id_pro = ?`
-      db.query(sql, [estado, id_pro], function (err, res) {
+      const { id_responsable, id_pro } = datos
+      const sql = `UPDATE proyecto SET id_responsable = ? WHERE id_pro = ?`
+      db.query(sql, [id_responsable, id_pro], function (err, res) {
         if (err) {
           return reject({ status: 500, mensaje: err })
         }
         if (res.affectedRows === 0) {
           return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
         }
-        resolve({ status: 200, mensaje: 'Proyecto editado con éxito' })
+        resolve({ status: 200, mensaje: 'Líder cambiado con éxito' })
       })
     })
   }
 
-  actualizarDocumento() {
+  cambiarEquipo(datos) {
     return new Promise((resolve, reject) => {
-
+      const { id_equipo, id_pro } = datos
+      const sql = `UPDATE proyecto SET id_equipo = ? WHERE id_pro = ?`
+      db.query(sql, [id_equipo, id_pro], function (err, res) {
+        if (err) {
+          return reject({ status: 500, mensaje: err })
+        }
+        if (res.affectedRows === 0) {
+          return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
+        }
+        resolve({ status: 200, mensaje: 'Equipo cambiado con éxito' })
+      })
     })
   }
+
+  cambiarFechas(datos) {
+    return new Promise((resolve, reject) => {
+      const { inicio, cierre, id_pro } = datos
+      const fecha_inicio = new Date(inicio) || null
+      const fecha_cierre = new Date(cierre) || null
+      let sqlArray = []
+      let edit = []
+      if (inicio) {
+        sqlArray.push('fecha_inicio = ?')
+        edit.push(fecha_inicio)
+      }
+      if (cierre) {
+        sqlArray.push('fecha_cierre = ?')
+        edit.push(fecha_cierre)
+      }
+      edit.push(id_pro)
+      const campos = sqlArray.join(',')
+      const sql = `UPDATE proyecto SET ${campos} WHERE id_pro = ?`
+      db.query(sql, edit, function (err, res) {
+        if (err) {
+          return reject({ status: 500, mensaje: err })
+        }
+        if (res.affectedRows === 0) {
+          return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
+        }
+        resolve({ status: 200, mensaje: 'Fechas ingresadas con éxito' })
+      })
+    })
+  }
+
+  eliminar(id) {
+    return new Promise((resolve, reject) => {
+      const sql = 'DELETE FROM proyecto WHERE id_pro = ?'
+      db.query(sql, [id], function (err, res) {
+        if (err) {
+          return reject({ status: 500, mensaje: err })
+        }
+        if (res.affectedRows === 0) {
+          return resolve({ status: 404, mensaje: 'Proyecto no encontrado' })
+        }
+        resolve({ status: 200, mensaje: 'Proyecto eliminado con éxito' })
+      })
+    })
+  }
+
 
 }
 
