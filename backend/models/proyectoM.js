@@ -63,23 +63,66 @@ class proyectoM {
       console.log(id_pro)
       const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, p.documento, p.imagen FROM proyecto p LEFT JOIN equipos e ON e.id_equi = p.id_equipo LEFT JOIN usuarios u ON u.id_usu = p.id_responsable WHERE p.id_pro = ?`
       const sqlDec = 'SELECT d.id_deci, d.id_pro, d.titulo, d.descripcion, d.id_responsable, d.estado, d.valoracion, d.resultado, d.impacto, d.observacion, d.fecha, d.id_creador, u.nombre, u.apellido, u.usuario FROM decisiones d INNER JOIN usuarios u ON u.id_usu = d.id_creador WHERE id_pro = ?'
-      const sqlComDec = 'SELECT v.id_val, v.puntaje, v.id_deci, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_dec FROM valoracion_dec v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_dec c ON V.id_val = c.id_val'
-      const sqlComIdea = 'SELECT v.id_val, v.puntaje, v.id_idea, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_idea FROM valoracion_idea v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_idea c ON V.id_val = c.id_val'
+      const sqlComDec = 'SELECT v.id_val, v.puntaje, v.id_deci, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_dec FROM valoracion_dec v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_dec c ON v.id_val = c.id_val INNER JOIN decisiones de ON de.id_deci = v.id_deci INNER JOIN proyecto p ON p.id_pro = de.id_pro WHERE de.id_pro = ?'
+      const sqlIdea = 'SELECT i.id_idea, i.id_pro, i.titulo, i.descripcion, i.id_creador, i.estado, i.fecha, u.nombre, u.apellido, u.usuario FROM ideas i INNER JOIN usuarios u ON u.id_usu = i.id_creador WHERE id_pro = ?'
+      const sqlComIdea = 'SELECT v.id_val, v.puntaje, v.id_idea, v.fecha, v.id_creador, u.nombre, u.apellido, u.usuario, c.comentario, c.id_com_idea FROM valoracion_idea v INNER JOIN usuarios u ON v.id_creador = u.id_usu INNER JOIN comentarios_idea c ON V.id_val = c.id_val INNER JOIN ideas i ON i.id_idea = v.id_idea INNER JOIN proyecto p ON p.id_pro = i.id_pro WHERE i.id_pro = ?'
 
       db.beginTransaction(async (err) => {
         if (err) {
           return reject(err)
         }
         try {
+          const comentariosDec = await new Promise((resolve, reject) => {
+            db.query(sqlComDec, [id_pro], async (err, res) => {
+              if (err) {
+                return reject({ status: 500, mensaje: err })
+              }
+              if (!res.length) {
+                return resolve({ status: 200, mensaje: 'No hay comentarios activas', data: res })
+              }
+              resolve({ status: 200, mensaje: 'Comentarios consultadas con éxito', data: res })
+            })
+          })
+
           const decisiones = await new Promise((resolve, reject) => {
             db.query(sqlDec, [id_pro], async (err, res) => {
               if (err) {
                 return reject({ status: 500, mensaje: err })
               }
               if (!res.length) {
-                return resolve({ status: 200, mensaje: 'No hay decisiones activas', data:res })
+                return resolve({ status: 200, mensaje: 'No hay decisiones activas', data: res })
               }
+              res.forEach(d => {
+                d.comentarios = comentariosDec.data.filter(c => c.id_deci == d.id_deci)
+              });
               resolve({ status: 200, mensaje: 'Desiciones consultadas con éxito', data: res })
+            })
+          })
+
+          const comentariosIdea = await new Promise((resolve, reject) => {
+            db.query(sqlComIdea, [id_pro], async (err, res) => {
+              if (err) {
+                return reject({ status: 500, mensaje: err })
+              }
+              if (!res.length) {
+                return resolve({ status: 200, mensaje: 'No hay comentarios activas', data: res })
+              }
+              resolve({ status: 200, mensaje: 'Comentarios consultadas con éxito', data: res })
+            })
+          })
+
+          const ideas = await new Promise((resolve, reject) => {
+            db.query(sqlIdea, [id_pro], async (err, res) => {
+              if (err) {
+                return reject({ status: 500, mensaje: err })
+              }
+              if (!res.length) {
+                return resolve({ status: 200, mensaje: 'No hay ideas activas', data: res })
+              }
+              res.forEach(d => {
+                d.comentarios = comentariosIdea.data.filter(c => c.id_idea == d.id_idea)
+              });
+              resolve({ status: 200, mensaje: 'Ideas consultadas con éxito', data: res })
             })
           })
 
@@ -92,7 +135,7 @@ class proyectoM {
             }
             const equipo = await this.equipos(res[0].id_equipo)
             res[0].equipo = equipo.data
-            resolve({ status: 200, mensaje: 'Proyecto consultado con éxito', proyecto: res, des: decisiones.data })
+            resolve({ status: 200, mensaje: 'Proyecto consultado con éxito', proyecto: res, des: decisiones.data, ideas: ideas.data })
           })
         } catch (error) {
           reject({ status: 500, mensaje: error })

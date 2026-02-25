@@ -14,7 +14,7 @@ router.get('/', protegerRuta, function (req, res, next) {
     });
 });
 
-router.get('/uno', protegerRuta, function (req, res, next) {
+router.post('/uno', protegerRuta, function (req, res, next) {
   proyectoC.uno(req.body.id_pro)
     .then((result) => {
       res.status(result.status).json(result)

@@ -14,9 +14,17 @@
       <v-col v-for="(p, index) in proyectos" :key="p.id_pro">
         <v-card elevation="5" prepend-icon="mdi-package">
           <template #title>
-            <span class="text-capitalize">
-              {{ p.nom_pro }}
-            </span>
+            <v-row class="pa-1">
+              <v-col cols="12" sm="6">
+                <span class="text-capitalize">
+                  {{ p.nom_pro }}
+                </span>
+              </v-col>
+              <v-col cols="12" sm="6" class="d-flex justify-sm-end">
+                <v-btn color="secondary" @click="$router.push(`detallesProyecto/${p.id_pro}`)" text="Ver detalles" class="rounded-pill" prepend-icon="mdi-eye">
+                </v-btn>
+              </v-col>
+            </v-row>
           </template>
           <template v-slot:subtitle>
             <p class="text-wrap">

@@ -12,6 +12,7 @@ import Usuarios from '@/pages/Usuarios.vue'
 import CambioClave from '@/pages/CambioClave.vue'
 import Proyectos from '@/pages/Proyectos.vue'
 import Equipos from '@/pages/Equipos.vue'
+import DetalleProyecto from '@/pages/DetalleProyecto.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +52,12 @@ const router = createRouter({
       name: 'Equipos',
       component: Equipos,
       meta: { title: 'Equipos', requiresAuth: true }
+    },
+    {
+      path: '/detallesProyecto/:id',
+      name: 'Detalles',
+      component: DetalleProyecto,
+      meta: { title: 'Detalles de proyecto', requiresAuth: true }
     },
   ],
 })
