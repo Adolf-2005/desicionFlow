@@ -1,6 +1,6 @@
 <template>
   <v-card class="image-container" flat>
-    <v-img v-if="imageUrl" :src="url + imageUrl" :alt="alt"  class="project-image" max-height="300px"
+    <v-img v-if="imageUrl" :src="url + imageUrl" :alt="alt"  class="project-image"
       @error="handleImageError">
       <template v-slot:error>
         <v-alert type="error" variant="tonal" class="ma-4">

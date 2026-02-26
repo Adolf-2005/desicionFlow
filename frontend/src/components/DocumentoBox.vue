@@ -20,7 +20,7 @@
             </v-card-subtitle>
           </v-col>
           <v-col cols="12" sm="6" class="d-flex justify-center justify-sm-end">
-            <v-btn variant="text" color="success" :href="documentUrl" :download="documentName" @click="handleDownload">
+            <v-btn variant="text" color="success" :href="url + documentUrl" :download="documentName" @click="handleDownload">
               <v-icon start>mdi-download</v-icon>
               Descargar
             </v-btn>
@@ -39,6 +39,8 @@
 
 <script setup>
 import { computed } from 'vue'
+const url = import.meta.env.VITE_PATH_DOCUMENT
+
 
 const props = defineProps({
   documentUrl: {

@@ -16,6 +16,7 @@ declare module 'vue' {
     DocumentoBox: typeof import('./src/components/DocumentoBox.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     ImagenBox: typeof import('./src/components/ImagenBox.vue')['default']
+    ImagenBoxCard: typeof import('./src/components/ImagenBoxCard.vue')['default']
     ModalCrearEquipos: typeof import('./src/components/modales/ModalCrearEquipos.vue')['default']
     ModalCrearProyecto: typeof import('./src/components/modales/ModalCrearProyecto.vue')['default']
     ModalEliminar: typeof import('./src/components/modales/ModalEliminar.vue')['default']

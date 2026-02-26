@@ -12,6 +12,7 @@ const lightTheme = {
     warning: '#F59E0B',
     background: '#F8FAFC',
     surface: '#FFFFFF',
+    carta: '#F9F9F9'
   },
 };
 
@@ -27,6 +28,7 @@ const darkTheme = {
     warning: '#FBBF24',
     background: '#020617',
     surface: '#0F172A',
+    carta: '#020617'
   },
 };
 

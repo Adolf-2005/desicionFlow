@@ -14,22 +14,28 @@ const createDir = (dir) => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadPath = 'uploads/';
-    
+
     // Diferentes carpetas según el tipo de archivo
     if (file.mimetype.startsWith('image/')) {
       uploadPath += 'images/';
     } else {
       uploadPath += 'documents/';
     }
-    
+
     createDir(uploadPath);
     cb(null, uploadPath);
   },
-  
+
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    let nombre
+    if (req.body.nombre.trim() != '') {
+      nombre = req.body.nombre
+    } else {
+      nombre = null
+    }
+    cb(null, nombre + '-' + uniqueSuffix + ext);
   }
 });
 
@@ -37,12 +43,12 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowedImages = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
   const allowedDocs = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-  
+
   if (allowedImages.includes(file.mimetype) || allowedDocs.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(new Error('Tipo de archivo no permitido'), false);
-  } 
+  }
 };
 
 // Configurar multer

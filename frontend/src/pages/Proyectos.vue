@@ -161,7 +161,6 @@ import ModalStatusFechas from '@/components/modales/ModalStatusFechas.vue';
 import { apiCall, apiCallFiles, uploadFilesWithFetch } from '@/utils/apiCall';
 import { onMounted, ref } from 'vue';
 
-
 const proyectos = ref([])
 const alerta = ref([])
 const formulario = ref(null)

@@ -171,12 +171,12 @@ class proyectoM {
       let imagenUrl
       let documentoUrl
       if (imagen) {
-        imagenUrl = process.env.PATH_IMAGEN + imagen[0].filename
+        imagenUrl = imagen[0].filename
       } else {
         imagenUrl = null
       }
       if (documento) {
-        documentoUrl = process.env.PATH_DOCUMENT + documento[0].filename
+        documentoUrl = documento[0].filename
       } else {
         documentoUrl = null
       }
@@ -207,12 +207,12 @@ class proyectoM {
         editPro.push(id_responsable)
       }
       if (imagen) {
-        imagenUrl = process.env.PATH_IMAGEN + imagen[0].filename
+        imagenUrl = imagen[0].filename
         edit.push('imagen = ?')
         editPro.push(imagenUrl)
       }
       if (documento) {
-        documentoUrl = process.env.PATH_DOCUMENT + documento[0].filename
+        documentoUrl = documento[0].filename
         edit.push('documento = ?')
         editPro.push(documentoUrl)
       }
