@@ -71,7 +71,7 @@ CREATE TABLE decisiones (
     estado ENUM('abierta', 'cerrada', 'en evaluacion') DEFAULT 'abierta',
     valoracion INT DEFAULT 0,
     resultado TEXT,
-    impacto TEXT,
+    impacto VARCHAR(100),
     observacion TEXT,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pro) REFERENCES proyecto(id_pro) ON DELETE CASCADE,
@@ -108,7 +108,8 @@ CREATE TABLE ideas (
     id_pro VARCHAR(200),
     titulo VARCHAR(200) NOT NULL,
     descripcion VARCHAR(300),
-    id_creador VARCHAR(200), -- Corregido de 300 a 200 para coincidir con usuarios
+    id_creador VARCHAR(200),
+    valoracion INT DEFAULT 0,
     estado ENUM('activa', 'evaluada', 'descarta') DEFAULT 'activa',
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pro) REFERENCES proyecto(id_pro) ON DELETE CASCADE,
@@ -174,3 +175,35 @@ INSERT INTO `proyecto` (`id_pro`, `nombre`, `descripcion`, `id_equipo`, `estado`
 ('PRJ-004', 'App Móvil Versión 2.0', 'Desarrollo de nuevas funcionalidades nativas para iOS y Android.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-03-01 08:00:00', NULL, '4', NULL, NULL),
 ('PRJ-005', 'Auditoría de Seguridad', 'Revisión anual de protocolos y vulnerabilidades.', 'EQUI-003', 'Cancelado', CURRENT_TIMESTAMP, '2024-01-10 11:00:00', '2024-01-15 15:00:00', '7', NULL, NULL),
 ('PRJ-006', 'Optimización de Base de Datos', 'Limpieza de logs y optimización de índices pesados.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-02-15 14:00:00', NULL, '1', NULL, NULL);
+
+INSERT INTO decisiones (id_deci, id_pro, titulo, descripcion, id_creador, id_responsable, estado, valoracion, impacto) VALUES 
+('DEC-004', 'PRJ-002', 'Base de Datos para Logs', '¿Usar MongoDB o una tabla relacional para el historial?', '1', '2', 'en evaluacion', 5, 'Alto'),
+('DEC-005', 'PRJ-003', 'Canal de Comunicación', 'Definir si se usará Slack o Microsoft Teams.', '8', '8', 'cerrada', 9, 'Medio'),
+('DEC-006', 'PRJ-004', 'Pasarela de Pagos', 'Integración con Stripe o PayPal.', '4', '1', 'abierta', 0, 'Alto'),
+('DEC-007', 'PRJ-001', 'Librería de Gráficas', '¿Chart.js o D3.js para las estadísticas?', '3', '5', 'abierta', 0, 'Bajo');
+
+INSERT INTO valoracion_dec (id_val, puntaje, id_creador, id_deci) VALUES 
+('VALD-003', 2, '5', 'DEC-004'),
+('VALD-004', 5, '2', 'DEC-005'),
+('VALD-005', 4, '3', 'DEC-005');
+
+INSERT INTO comentarios_dec (id_val, comentario) VALUES 
+('VALD-003', 'MongoDB podría ser overkill si no tenemos tantos datos.'),
+('VALD-004', 'Slack tiene mejores integraciones con nuestras herramientas actuales.'),
+('VALD-005', 'De acuerdo, la interfaz es mucho más intuitiva.');
+
+INSERT INTO ideas (id_idea, id_pro, titulo, descripcion, id_creador, estado, valoracion) VALUES 
+('IDEA-004', 'PRJ-001', 'Exportar a PDF', 'Generar reportes de las decisiones tomadas en PDF.', '10', 'activa', 5),
+('IDEA-005', 'PRJ-003', 'Bot de Bienvenida', 'Un bot que asigne tareas automáticamente a nuevos miembros.', '7', 'activa', 0),
+('IDEA-006', 'PRJ-002', 'Caché con Redis', 'Implementar Redis para acelerar las consultas frecuentes.', '2', 'evaluada', 4),
+('IDEA-007', 'PRJ-004', 'Soporte Multi-idioma', 'Añadir i18n para soportar inglés y español.', '5', 'descarta', 1);
+
+INSERT INTO valoracion_idea (id_val, puntaje, id_creador, id_idea) VALUES 
+('VALI-003', 5, '1', 'IDEA-004'),
+('VALI-004', 1, '4', 'IDEA-007'),
+('VALI-005', 4, '5', 'IDEA-006');
+
+INSERT INTO comentarios_idea (id_val, comentario) VALUES 
+('VALI-003', 'Es fundamental para las reuniones de gerencia.'),
+('VALI-004', 'Por ahora no es prioridad, enfoquémonos en el mercado local.'),
+('VALI-005', 'Redis nos ayudaría mucho con la latencia del servidor actual.');

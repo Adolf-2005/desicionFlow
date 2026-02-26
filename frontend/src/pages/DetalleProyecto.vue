@@ -1,4 +1,6 @@
 <template>
+  <v-btn class="position-fixed ma-4" @click="$router.back(-1)" icon="mdi-keyboard-backspace">
+  </v-btn>
 
   <v-container class="pa-0 pa-sm-4">
     <v-card rounded="lg" elevation="5">
@@ -42,7 +44,7 @@
                         </span>
                       </h2>
                     </div>
-                    <v-card color="carta" elevation="0" rounded="lg">
+                    <v-card color="carta" elevation="0" rounded="lg" min-height="172">
                       <div v-if="equipo">
                         <v-list class="bg-carta">
                           <v-list-item class="bg-carta" :title="equipo.nombre" :subtitle="equipo.descripcion">
@@ -134,6 +136,216 @@
         </v-row>
       </v-card-text>
     </v-card>
+
+    <v-col cols="12" class="mt-2 mb-2">
+      <v-row>
+        <v-col cols="12" sm="10" class="pl-sm-0">
+          <h2 class="font-weight-light border-titulo pl-2">Decisiones involucradas en el proyecto <v-chip
+              class=" d-sm-none" color="primary" variant="elevated">{{ decisiones.length }}</v-chip></h2>
+        </v-col>
+        <v-col class="d-none d-sm-flex justify-end">
+          <v-chip color="primary" variant="elevated">{{ decisiones.length }}</v-chip>
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <v-col v-for="d in decisiones" class="pl-sm-0" v-if="decisiones.length">
+      <v-card rounded="lg" elevation="5" class="border-titulo" :text="d.descripcion">
+        <template #title>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <p class="text-h7">
+                {{ d.titulo }}
+              </p>
+              <small class="text-medium-emphasis text-body-2">
+                {{ formatDate(d.fecha) }}
+              </small>
+            </v-col>
+            <v-col cols="12" sm="6" class="d-flex justify-sm-end align-start">
+              <div class="d-flex align-center">
+                <v-rating :model-value="valor(d.valoracion, d.comentarios.length)" color="warning" density="compact"
+                  readonly></v-rating>
+                <div>
+                  <small class="text-medium-emphasis">
+                    {{ valor(d.valoracion, d.comentarios.length) }}
+                  </small>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </template>
+        <v-card-text class="pt-0">
+          <p>
+            <v-avatar variant="tonal">
+              {{ d.nombre.charAt(0) }}{{ d.apellido.charAt(0) }}
+            </v-avatar>
+            Creador <span> {{ d.nombre + ' ' + d.apellido }}</span> <span class="text-medium-emphasis">@{{ d.usuario
+            }}</span>
+          </p>
+          <v-col cols="12" class="d-flex ga-2">
+            <v-chip :color="estadoColor(d.estado)" size="small">{{ capitalizar(d.estado) }}</v-chip>
+            <v-chip :color="impactoColor(d.impacto)" size="small">Impacto: {{ d.impacto }}</v-chip>
+          </v-col>
+          <v-expansion-panels class="mt-2" v-if="d.comentarios.length">
+            <v-expansion-panel>
+              <v-expansion-panel-title class="d-flex ga-2">
+                <v-icon>
+                  mdi-comment
+                </v-icon>
+                Comentarios
+              </v-expansion-panel-title>
+              <v-expansion-panel-text class="pa-0">
+                <v-list class="">
+                  <template v-for="c in d.comentarios">
+                    <v-list-item class="border-s-thin bg-carta ma-1 rounded-lg" lines="two">
+                      <div class="d-flex ga-2">
+                        <div>
+                          <div class="d-flex flex-column flex-sm-row ga-2">
+                            <p class="text-wrap d-flex ga-1">
+                              <v-icon>
+                                mdi-shield-account-outline
+                              </v-icon>
+                              <span>
+                                <strong>{{ c.nombre }} {{ c.apellido }}</strong> - <small>@{{ c.usuario }}</small>
+                              </span>
+                            </p>
+                            <v-rating :model-value="c.puntaje" color="warning" size="small" density="compact"
+                              readonly></v-rating>
+                          </div>
+                          <p class="mt-2">
+                            {{ c.comentario }}
+                          </p>
+                        </div>
+                      </div>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+          <v-card class="text-center" color="carta" v-else>
+            <v-card-text class="d-flex flex-column justify-center align-center">
+              <v-avatar variant="tonal">
+                <v-icon>mdi-comment-off-outline</v-icon>
+              </v-avatar>
+              Sin comentarios..
+            </v-card-text>
+          </v-card>
+        </v-card-text>
+      </v-card>
+    </v-col>
+
+    <v-col cols="12" class="pa-0" v-else>
+      <v-alert type="info" variant="tonal" border="start" icon="mdi-information-outline" class="mt-4">
+        <v-alert-title>Bandeja vacía</v-alert-title>
+        Actualmente no existen decisiones registradas en el sistema.
+      </v-alert>
+    </v-col>
+
+    <v-col cols="12" class="mt-2 mb-2">
+      <v-row>
+        <v-col cols="12" sm="10" class="pl-sm-0">
+          <h2 class="font-weight-light border-titulo pl-2">Ideas propuestas <v-chip class=" d-sm-none" color="primary"
+              variant="elevated">{{ ideas.length }}</v-chip></h2>
+        </v-col>
+        <v-col class="d-none d-sm-flex justify-end">
+          <v-chip color="primary" variant="elevated">{{ ideas.length }}</v-chip>
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <v-col v-for="i in ideas" class="pl-sm-0" v-if="ideas.length">
+      <v-card rounded="lg" elevation="5" class="border-titulo" :text="i.descripcion">
+        <template #title>
+          <v-row>
+            <v-col cols="12" sm="6">
+              <p class="text-h7">
+                {{ i.titulo }}
+              </p>
+              <small class="text-medium-emphasis text-body-2">
+                {{ formatDate(i.fecha) }}
+              </small>
+            </v-col>
+            <v-col cols="12" sm="6" class="d-flex justify-sm-end align-start">
+              <div class="d-flex align-center">
+                <v-rating :model-value="valor(i.valoracion, i.comentarios.length)" color="warning" density="compact"
+                  readonly></v-rating>
+                <div>
+                  <small class="text-medium-emphasis">
+                    {{ valor(i.valoracion, i.comentarios.length) }}
+                  </small>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </template>
+        <v-card-text class="pt-0">
+          <p>
+            <v-avatar variant="tonal">
+              {{ i.nombre.charAt(0) }}{{ i.apellido.charAt(0) }}
+            </v-avatar>
+            Creador <span> {{ i.nombre + ' ' + i.apellido }}</span> <span class="text-medium-emphasis">@{{ i.usuario
+            }}</span>
+          </p>
+          <v-col cols="12" class="d-flex ga-2">
+            <v-chip :color="estadoColor(i.estado)" size="small">{{ capitalizar(i.estado) }}</v-chip>
+          </v-col>
+          <v-expansion-panels class="mt-2" v-if="i.comentarios.length">
+            <v-expansion-panel>
+              <v-expansion-panel-title class="d-flex ga-2">
+                <v-icon>
+                  mdi-comment
+                </v-icon>
+                Comentarios
+              </v-expansion-panel-title>
+              <v-expansion-panel-text class="pa-0">
+                <v-list class="">
+                  <template v-for="c in i.comentarios">
+                    <v-list-item class="border-s-thin bg-carta ma-1 rounded-lg" lines="two">
+                      <div class="d-flex ga-2">
+                        <div>
+                          <div class="d-flex flex-column flex-sm-row ga-2">
+                            <p class="text-wrap d-flex ga-1">
+                              <v-icon>
+                                mdi-shield-account-outline
+                              </v-icon>
+                              <span>
+                                <strong>{{ c.nombre }} {{ c.apellido }}</strong> - <small>@{{ c.usuario }}</small>
+                              </span>
+                            </p>
+                            <v-rating :model-value="c.puntaje" color="warning" size="small" density="compact"
+                              readonly></v-rating>
+                          </div>
+                          <p class="mt-2">
+                            {{ c.comentario }}
+                          </p>
+                        </div>
+                      </div>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+          <v-card class="text-center" color="carta" v-else>
+            <v-card-text class="d-flex flex-column justify-center align-center">
+              <v-avatar variant="tonal">
+                <v-icon>mdi-comment-off-outline</v-icon>
+              </v-avatar>
+              Sin comentarios..
+            </v-card-text>
+          </v-card>
+        </v-card-text>
+      </v-card>
+    </v-col>
+
+     <v-col cols="12" class="pa-0" v-else>
+      <v-alert type="info" variant="tonal" border="start" icon="mdi-information-outline" class="mt-4">
+        <v-alert-title>Bandeja vacía</v-alert-title>
+        Actualmente no existen ideas registradas en el sistema.
+      </v-alert>
+    </v-col> 
+
   </v-container>
 
   <Notificacion ref="alerta" />
@@ -155,7 +367,6 @@ const decisiones = ref([])
 const alerta = ref(null)
 
 function obtenerDatos() {
-  console.log(route.value.params.id)
   apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })
     .then((result) => {
       proyecto.value = result.data.proyecto[0]
@@ -176,6 +387,17 @@ function obtenerDatos() {
     });
 }
 
+function valor(puntaje = 0, total = 0) {
+  if (parseFloat(puntaje) === 0) {
+    return 0
+  }
+  if (parseFloat(total) === 0) {
+    return 0
+  }
+  const result = parseFloat(puntaje) / parseFloat(total)
+  return result
+}
+
 const formatDate = (dateString) => {
   if (!dateString) return 'No disponible'
   return new Date(dateString).toLocaleDateString('es-ES', {
@@ -186,11 +408,22 @@ const formatDate = (dateString) => {
 }
 
 const estadoColor = (status) => {
+  const estado = capitalizar(status)
   return {
-    'Activo': 'success',
-    'Cancelado': 'error',
-    'Completado': 'primary'
-  }[status] || 'status-default'
+    'Abierta': 'warning',
+    'Cerrada': 'success',
+    'En Evaluacion': 'primary',
+    'En evaluacion': 'primary'
+  }[estado] || 'status-default'
+}
+
+const impactoColor = (status) => {
+  const impacto = capitalizar(status)
+  return {
+    'Alto': 'error',
+    'Medio': 'warning',
+    'Bajo': 'success',
+  }[impacto] || 'status-default'
 }
 
 const capitalizar = (str) => {
@@ -206,5 +439,9 @@ onMounted(() => {
 <style scoped>
 .contenido {
   flex-direction: column-reverse;
+}
+
+.border-titulo {
+  border-left: 4px solid rgba(var(--v-theme-primary), 1);
 }
 </style>

@@ -9,13 +9,13 @@
             </v-toolbar-title>
           </v-toolbar>
           <v-card-text class="pa-8">
-            <v-form ref="form" v-model="formLogin" @submit.prevent="login">
+            <v-form ref="form" v-model="formLogin">
               <v-text-field v-model="record.usuario" label="Nombre de usuario" prepend-inner-icon="mdi-account-key"
                 variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]"></v-text-field>
               <div class="d-flex gap-2">
                 <v-text-field v-model="record.clave" label="Contraseña" prepend-inner-icon="mdi-lock-outline"
-                  :type="password" variant="underlined" class="mb-2"
-                  :rules="[rules.empty, rules.required]"></v-text-field>
+                  :type="password" variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]"
+                  @keyup.enter="login()"></v-text-field>
                 <v-btn icon="mdi-eye" @mousedown="password = 'text'" @mouseup="password = 'password'"></v-btn>
               </div>
 
@@ -50,29 +50,32 @@ const record = ref({
 const alerta = ref(null)
 
 function login() {
-  apiCall('usuarios/login', 'POST', record.value)
-    .then((result) => {
-      alerta.value.notify({
-        type: 'success',
-        title: '',
-        message: result.data?.mensaje || 'Credenciales inválidas'
-      })
-      setCookie('user_token', result.data.token, result.data.expiresIn)
-      console.log(result.data.cambio_clave)
-      setTimeout(() => {
-        if (!result.data.cambio_clave) {
-          router.push('/')
-        } else {
-          router.push('/password')
-        }
-      }, 1000);
-    }).catch((err) => {
-      alerta.value.notify({
-        type: 'error',
-        title: 'Fallo de acceso',
-        message: err?.mensaje || 'Credenciales inválidas'
-      })
-    });
+  if (formLogin.value) {
+    apiCall('usuarios/login', 'POST', record.value)
+      .then((result) => {
+        alerta.value.notify({
+          type: 'success',
+          title: '',
+          message: result.data?.mensaje || 'Credenciales inválidas'
+        })
+        setCookie('user_token', result.data.token, result.data.expiresIn)
+        console.log(result.data.cambio_clave)
+        setTimeout(() => {
+          if (!result.data.cambio_clave) {
+            router.push('/')
+          } else {
+            router.push('/password')
+          }
+        }, 1000);
+      }).catch((err) => {
+        alerta.value.notify({
+          type: 'error',
+          title: 'Fallo de acceso',
+          message: err?.mensaje || 'Credenciales inválidas'
+        })
+      });
+  }
+
 }
 
 
