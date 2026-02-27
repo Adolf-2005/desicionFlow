@@ -195,7 +195,7 @@
                 Comentarios
               </v-expansion-panel-title>
               <v-expansion-panel-text class="pa-0">
-                <v-list class="">
+                <v-list>
                   <template v-for="c in d.comentarios">
                     <v-list-item class="border-s-thin bg-carta ma-1 rounded-lg" lines="two">
                       <div class="d-flex ga-2">
@@ -231,6 +231,27 @@
               Sin comentarios..
             </v-card-text>
           </v-card>
+          <v-col cols="12" sm="6" class="px-0">
+            <v-card color="carta" class="pa-4">
+              <v-form>
+                <v-card-title class="px-0">
+                  <div class="d-flex align-center ga-2">
+                    <span class="text-subtitle-2">
+                      Deja un comentario
+                    </span>
+                    <v-rating v-model="val_dec.puntaje" color="warning" hover density="compact"></v-rating>
+                  </div>
+                </v-card-title>
+                <v-textarea v-model="val_dec.comentario" label="Escribe tu opinión..." rounded="lg" variant="outlined"
+                  auto-grow rows="2" hide-details density="compact">
+                </v-textarea>
+                <v-btn color="invertida" size="small" prepend-icon="mdi-send" class="w-100 mt-4" rounded="xl"
+                  variant="elevated" @click="" :disabled="botonDec">
+                  Comentar
+                </v-btn>
+              </v-form>
+            </v-card>
+          </v-col>
         </v-card-text>
       </v-card>
     </v-col>
@@ -335,16 +356,37 @@
               Sin comentarios..
             </v-card-text>
           </v-card>
+          <v-col cols="12" sm="6" class="px-0">
+            <v-card color="carta" class="pa-4">
+              <v-form>
+                <v-card-title class="px-0">
+                  <div class="d-flex align-center ga-2">
+                    <span class="text-subtitle-2">
+                      Deja un comentario
+                    </span>
+                    <v-rating v-model="val_idea.puntaje" color="warning" hover density="compact"></v-rating>
+                  </div>
+                </v-card-title>
+                <v-textarea v-model="val_idea.comentario" label="Escribe tu opinión..." rounded="lg" variant="outlined"
+                  auto-grow rows="2" hide-details density="compact">
+                </v-textarea>
+                <v-btn color="invertida" size="small" prepend-icon="mdi-send" class="w-100 mt-4" rounded="xl"
+                  variant="elevated" @click="" :disabled="botonIdea">
+                  Comentar
+                </v-btn>
+              </v-form>
+            </v-card>
+          </v-col>
         </v-card-text>
       </v-card>
     </v-col>
 
-     <v-col cols="12" class="pa-0" v-else>
+    <v-col cols="12" class="pa-0" v-else>
       <v-alert type="info" variant="tonal" border="start" icon="mdi-information-outline" class="mt-4">
         <v-alert-title>Bandeja vacía</v-alert-title>
         Actualmente no existen ideas registradas en el sistema.
       </v-alert>
-    </v-col> 
+    </v-col>
 
   </v-container>
 
@@ -353,10 +395,9 @@
 
 <script setup>
 import ImagenBox from '@/components/ImagenBox.vue';
-import ImagenBoxCard from '@/components/ImagenBoxCard.vue';
 import Notificacion from '@/components/Notificacion.vue';
 import { apiCall } from '@/utils/apiCall';
-import { capitalize, onMounted, ref } from 'vue';
+import { capitalize, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vuetify/lib/composables/router.mjs';
 
 const route = useRoute()
@@ -365,6 +406,28 @@ const ideas = ref([])
 const equipo = ref([])
 const decisiones = ref([])
 const alerta = ref(null)
+const val_dec = ref({
+  puntaje: 0,
+  comentario: ''
+})
+const val_idea = ref({
+  puntaje: 0,
+  comentario: ''
+})
+const botonDec = ref(true)
+const botonIdea = ref(true)
+
+watch(val_dec.value, (newVal) => {
+  if (newVal.puntaje > 0) {
+    botonDec.value = false
+  }
+}, { deep: true })
+
+watch(val_idea.value, (newVal) => {
+  if (newVal.puntaje > 0) {
+    botonIdea.value = false
+  }
+}, { deep: true })
 
 function obtenerDatos() {
   apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })

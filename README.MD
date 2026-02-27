@@ -33,7 +33,7 @@ PATH_IMAGEN = http://localhost:3000/uploads/images/
 
 ```
 
-🚀 Guía de Instalación y Despliegue
+🚀 Guía de Instalación, Despliegue y base de datos
 Sigue estos pasos en tu terminal para poner el servidor en funcionamiento:
 
 1. Acceder al directorio
@@ -49,7 +49,13 @@ Descarga e instala todos los módulos necesarios definidos en el ```package.json
 cmd
 npm i
 ```
-3. Ejecución en desarrollo
+3. Instalación de base de datos
+Debes tener xampp en ejecución y en la consola de backend ejecutar el siguien comando
+```
+cmd
+npm run db:setup
+```
+4. Ejecución en desarrollo
 Inicia el servidor con soporte para recarga automática:
 ```
 cmd
@@ -77,13 +83,36 @@ Para que la aplicación se comunique correctamente con la API, es necesario conf
 
 1. Ubícate en la carpeta del frontend: `cd ./frontend`.
 2. Crea un archivo llamado `.env`.
-3. Copia el siguiente bloque de código. **Importante:** En Vue, las variables deben comenzar con `VUE_APP_` para que sean accesibles en el cliente.
+3. Copia el siguiente bloque de código. **Importante:** En Vue con VITE, las variables deben comenzar con `VITE_` para que sean accesibles en el cliente.
 
 ```env
 # URL de la API del Backend
-VUE_APP_API_BASE_URL = http://localhost:3000
+VITE_BACKEND_URL = http://localhost:3000
 
 # Rutas para recursos multimedia
 VITE_PATH_DOCUMENT = http://localhost:3000/uploads/documents/
 VITE_PATH_IMAGEN = http://localhost:3000/uploads/images/
+```
+
+🚀 Guía de Instalación y Despliegue
+Sigue estos pasos en tu terminal para poner el servidor en funcionamiento:
+
+1. Acceder al directorio
+Navega a la carpeta específica del frontend:
+
+```
+cmd
+cd ./frontend
+```
+2. Instalación de dependencias
+Descarga e instala todos los módulos necesarios definidos en el ```package.json:```
+```
+cmd
+npm i
+```
+3. Ejecución en desarrollo
+Inicia el servidor con soporte para recarga automática:
+```
+cmd
+npm run serve
 ```
