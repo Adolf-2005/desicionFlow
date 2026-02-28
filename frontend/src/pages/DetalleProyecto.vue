@@ -67,29 +67,6 @@
                               </div>
                             </div>
                           </v-list-item>
-                          <!-- <v-list-item title="Miembros del equipo">
-                            <v-expansion-panels color="carta">
-                              <v-expansion-panel title="Lista de usuarios">
-                                <v-expansion-panel-text class="bg-carta">
-                                  <template v-for="m in equipo.miembros">
-                                    <v-list class="bg-carta">
-                                      <v-list-item class="bg-carta"
-                                        :title="m.nombre + ' ' + m.apellido + ' ' + m.cedula"
-                                        :subtitle="'@' + m.usuario">
-                                        <template v-slot:prepend>
-                                          <v-avatar size="40" variant="tonal">
-                                            <v-icon>
-                                              mdi-microsoft-teams
-                                            </v-icon>
-                                          </v-avatar>
-                                        </template>
-                                      </v-list-item>
-                                    </v-list>
-                                  </template>
-                                </v-expansion-panel-text>
-                              </v-expansion-panel>
-                            </v-expansion-panels>
-                          </v-list-item> -->
                         </v-list>
                       </div>
                       <div v-else>
@@ -135,6 +112,15 @@
           </v-col>
         </v-row>
       </v-card-text>
+      <v-card-actions>
+        <v-btn color="info" text="Crear decisión" prepend-icon="mdi-plus" v-if="id_logeado === id_responsable"
+          @click="statusFecha.crearDecision({ id_creador: id_logeado, id_pro: proyecto.id_pro })">
+        </v-btn>
+        <v-btn color="info" text="Proponer ideas" prepend-icon="mdi-plus" v-if="equipo && perteneceMiembro(id_logeado)"
+          @click="statusFecha.crearDecision({ id_creador: id_logeado, id_pro: proyecto.id_pro })">
+        </v-btn>
+
+      </v-card-actions>
     </v-card>
 
     <v-col cols="12" class="mt-2 mb-2">
@@ -186,6 +172,16 @@
             <v-chip :color="estadoColor(d.estado)" size="small">{{ capitalizar(d.estado) }}</v-chip>
             <v-chip :color="impactoColor(d.impacto)" size="small">Impacto: {{ d.impacto }}</v-chip>
           </v-col>
+          <v-col>
+            <v-list>
+              <v-list-item title="Observaciones">
+                {{ d.observacion || 'Sin observaciones' }}
+              </v-list-item>
+              <v-list-item title="Resultado">
+                {{ d.resultado || 'Aún no se registran resultados' }}
+              </v-list-item>
+            </v-list>
+          </v-col>
           <v-expansion-panels class="mt-2" v-if="d.comentarios.length">
             <v-expansion-panel>
               <v-expansion-panel-title class="d-flex ga-2">
@@ -231,7 +227,7 @@
               Sin comentarios..
             </v-card-text>
           </v-card>
-          <v-col cols="12" sm="6" class="px-0">
+          <v-col cols="12" sm="6" class="px-0" v-if="equipo && perteneceMiembro(id_logeado)">
             <v-card color="carta" class="pa-4">
               <v-form>
                 <v-card-title class="px-0">
@@ -246,13 +242,25 @@
                   auto-grow rows="2" hide-details density="compact">
                 </v-textarea>
                 <v-btn color="invertida" size="small" prepend-icon="mdi-send" class="w-100 mt-4" rounded="xl"
-                  variant="elevated" @click="" :disabled="botonDec">
+                  variant="elevated" @click="comentarioDec(d.id_deci)" :disabled="botonDec"
+                  :loading="cargandoComentario">
                   Comentar
                 </v-btn>
               </v-form>
             </v-card>
           </v-col>
         </v-card-text>
+        <v-card-actions v-if="(id_logeado === d.id_creador) || (id_logeado === id_responsable)">
+          <v-btn color="info" text="Editar" prepend-icon="mdi-pencil"
+            @click="statusFecha.editarDec(constructorIdea(d))"></v-btn>
+          <v-btn color="info" text="Resultado" prepend-icon="mdi-file-chart-outline"
+            @click="statusFecha.abrirResultados({ id_deci: d.id_deci, id_pro: proyecto.id_pro })"></v-btn>
+          <v-btn color="info" text="Cambiar estado"
+            @click="statusFecha.abrirEstadoDec({ id_deci: d.id_deci, id_pro: proyecto.id_pro })"
+            prepend-icon="mdi-sync-circle" v-if="id_logeado === id_responsable"></v-btn>
+          <v-btn color="error" text="Eliminar" prepend-icon="mdi-delete"
+            @click="eliminar.abrir(d.titulo, { id_deci: d.id_deci, id_pro: d.id_pro })"></v-btn>
+        </v-card-actions>
       </v-card>
     </v-col>
 
@@ -356,7 +364,7 @@
               Sin comentarios..
             </v-card-text>
           </v-card>
-          <v-col cols="12" sm="6" class="px-0">
+          <v-col cols="12" sm="6" class="px-0" v-if="equipo && perteneceMiembro(id_logeado)">
             <v-card color="carta" class="pa-4">
               <v-form>
                 <v-card-title class="px-0">
@@ -387,17 +395,21 @@
         Actualmente no existen ideas registradas en el sistema.
       </v-alert>
     </v-col>
-
+    {{ id_logeado }}
   </v-container>
 
+  <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
+  <ModalStatusFechas ref="statusFecha" @recargar="recargar" />
   <Notificacion ref="alerta" />
 </template>
 
 <script setup>
 import ImagenBox from '@/components/ImagenBox.vue';
+import ModalStatusFechas from '@/components/modales/ModalStatusFechas.vue';
 import Notificacion from '@/components/Notificacion.vue';
 import { apiCall } from '@/utils/apiCall';
-import { capitalize, onMounted, ref, watch } from 'vue';
+import { getPersonId } from '@/utils/authdecode';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vuetify/lib/composables/router.mjs';
 
 const route = useRoute()
@@ -406,6 +418,7 @@ const ideas = ref([])
 const equipo = ref([])
 const decisiones = ref([])
 const alerta = ref(null)
+const statusFecha = ref(null)
 const val_dec = ref({
   puntaje: 0,
   comentario: ''
@@ -414,8 +427,13 @@ const val_idea = ref({
   puntaje: 0,
   comentario: ''
 })
+const id_logeado = ref(getPersonId())
+const id_responsable = ref(null)
+const eliminar = ref(null)
 const botonDec = ref(true)
 const botonIdea = ref(true)
+const cargandoComentario = ref(false)
+
 
 watch(val_dec.value, (newVal) => {
   if (newVal.puntaje > 0) {
@@ -433,9 +451,11 @@ function obtenerDatos() {
   apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })
     .then((result) => {
       proyecto.value = result.data.proyecto[0]
+      id_responsable.value = proyecto.value.id_responsable
       equipo.value = result.data.proyecto[0].equipo[0]
       ideas.value = result.data.ideas
       decisiones.value = result.data.des
+      id_responsable.value = proyecto.value.id_responsable
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -448,6 +468,86 @@ function obtenerDatos() {
         message: err.mensaje || 'Credenciales inválidas'
       })
     });
+}
+
+function recargar() {
+  apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })
+    .then((result) => {
+      proyecto.value = result.data.proyecto[0]
+      id_responsable.value = proyecto.value.id_responsable
+      equipo.value = result.data.proyecto[0].equipo[0]
+      ideas.value = result.data.ideas
+      decisiones.value = result.data.des
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function eliminarProyecto(data) {
+  apiCall('decisiones/eliminar', 'DELETE', data)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      eliminar.value.cerrar()
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function comentarioDec(id) {
+  val_dec.value.id_deci = id
+  val_dec.value.id_pro = proyecto.value.id_pro
+  cargandoComentario.value = true
+  apiCall('decisiones/crearComentario', 'POST', val_dec.value)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      cargandoComentario.value = false
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+      cargandoComentario.value = false
+    });
+}
+
+function constructorIdea(objeto) {
+  const data = {
+    id_pro: objeto.id_pro,
+    id_deci: objeto.id_deci,
+    titulo: objeto.titulo,
+    descripcion: objeto.descripcion,
+    estado: objeto.estado,
+    impacto: objeto.impacto,
+    observacion: objeto.observacion,
+  }
+  return data
+}
+
+function perteneceMiembro(persona) {
+  const miembros = equipo.value?.miembros;
+  if (!miembros || !Array.isArray(miembros)) {
+    return false;
+  }
+  return miembros.some(e => e.id_usu === persona);
 }
 
 function valor(puntaje = 0, total = 0) {

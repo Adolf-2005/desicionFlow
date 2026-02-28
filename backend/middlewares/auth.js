@@ -9,7 +9,7 @@ const protegerRuta = (req, res, next) => {
 
     try {
         const verificado = jwt.verify(token, process.env.JSONWEBTOKEN);
-        req.token = verificado; // Guardamos los datos del usuario en la petición
+        req.body.id_usu = verificado.id; // Guardamos los datos del usuario en la petición
         next(); // Continuamos a la ruta
     } catch (error) {
         res.status(401).json({ mensaje: "Token no válido" });

@@ -67,7 +67,6 @@ CREATE TABLE decisiones (
     titulo VARCHAR(200) NOT NULL,
     descripcion VARCHAR(300),
     id_creador VARCHAR(200),
-    id_responsable VARCHAR(200),
     estado ENUM('abierta', 'cerrada', 'en evaluacion') DEFAULT 'abierta',
     valoracion INT DEFAULT 0,
     resultado TEXT,
@@ -76,10 +75,8 @@ CREATE TABLE decisiones (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pro) REFERENCES proyecto(id_pro) ON DELETE CASCADE,
     FOREIGN KEY (id_creador) REFERENCES usuarios(id_usu) ON DELETE SET NULL,
-    FOREIGN KEY (id_responsable) REFERENCES usuarios(id_usu) ON DELETE SET NULL,
     INDEX idx_proyecto (id_pro),
-    INDEX idx_creador (id_creador),
-    INDEX idx_responsable_deci (id_responsable)
+    INDEX idx_creador (id_creador)
 );
 
 -- Tabla de valoración decisiones
@@ -176,11 +173,11 @@ INSERT INTO `proyecto` (`id_pro`, `nombre`, `descripcion`, `id_equipo`, `estado`
 ('PRJ-005', 'Auditoría de Seguridad', 'Revisión anual de protocolos y vulnerabilidades.', 'EQUI-003', 'Cancelado', CURRENT_TIMESTAMP, '2024-01-10 11:00:00', '2024-01-15 15:00:00', '7', NULL, NULL),
 ('PRJ-006', 'Optimización de Base de Datos', 'Limpieza de logs y optimización de índices pesados.', 'EQUI-001', 'Activo', CURRENT_TIMESTAMP, '2024-02-15 14:00:00', NULL, '1', NULL, NULL);
 
-INSERT INTO decisiones (id_deci, id_pro, titulo, descripcion, id_creador, id_responsable, estado, valoracion, impacto) VALUES 
-('DEC-004', 'PRJ-002', 'Base de Datos para Logs', '¿Usar MongoDB o una tabla relacional para el historial?', '1', '2', 'en evaluacion', 5, 'Alto'),
-('DEC-005', 'PRJ-003', 'Canal de Comunicación', 'Definir si se usará Slack o Microsoft Teams.', '8', '8', 'cerrada', 9, 'Medio'),
-('DEC-006', 'PRJ-004', 'Pasarela de Pagos', 'Integración con Stripe o PayPal.', '4', '1', 'abierta', 0, 'Alto'),
-('DEC-007', 'PRJ-001', 'Librería de Gráficas', '¿Chart.js o D3.js para las estadísticas?', '3', '5', 'abierta', 0, 'Bajo');
+INSERT INTO decisiones (id_deci, id_pro, titulo, descripcion, id_creador, estado, valoracion, impacto) VALUES 
+('DEC-004', 'PRJ-002', 'Base de Datos para Logs', '¿Usar MongoDB o una tabla relacional para el historial?', '1', 'en evaluacion', 5, 'Alto'),
+('DEC-005', 'PRJ-003', 'Canal de Comunicación', 'Definir si se usará Slack o Microsoft Teams.', '8', 'cerrada', 9, 'Medio'),
+('DEC-006', 'PRJ-004', 'Pasarela de Pagos', 'Integración con Stripe o PayPal.', '4', 'abierta', 0, 'Alto'),
+('DEC-007', 'PRJ-001', 'Librería de Gráficas', '¿Chart.js o D3.js para las estadísticas?', '3', 'abierta', 0, 'Bajo');
 
 INSERT INTO valoracion_dec (id_val, puntaje, id_creador, id_deci) VALUES 
 ('VALD-003', 2, '5', 'DEC-004'),
