@@ -194,7 +194,7 @@
                 <v-list>
                   <template v-for="c in d.comentarios">
                     <v-list-item class="border-s-thin bg-carta ma-1 rounded-lg" lines="two">
-                      <div class="d-flex ga-2">
+                      <div class="d-flex ga-2 justify-sm-space-between">
                         <div>
                           <div class="d-flex flex-column flex-sm-row ga-2">
                             <p class="text-wrap d-flex ga-1">
@@ -211,6 +211,10 @@
                           <p class="mt-2">
                             {{ c.comentario }}
                           </p>
+                        </div>
+                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_">
+                          <v-btn color="error" icon="mdi-delete" variant="text">
+                          </v-btn>
                         </div>
                       </div>
                     </v-list-item>
@@ -301,7 +305,7 @@
                   readonly></v-rating>
                 <div>
                   <small class="text-medium-emphasis">
-                    {{ valor(i.valoracion, i.comentarios.length) }}
+                    {{ valor(i.valoracion, i.comentarios.length).toFixed(1) }}
                   </small>
                 </div>
               </div>
@@ -331,7 +335,7 @@
                 <v-list class="">
                   <template v-for="c in i.comentarios">
                     <v-list-item class="border-s-thin bg-carta ma-1 rounded-lg" lines="two">
-                      <div class="d-flex ga-2">
+                      <div class="d-flex ga-2 justify-sm-space-between">
                         <div>
                           <div class="d-flex flex-column flex-sm-row ga-2">
                             <p class="text-wrap d-flex ga-1">
@@ -348,6 +352,10 @@
                           <p class="mt-2">
                             {{ c.comentario }}
                           </p>
+                        </div>
+                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_">
+                          <v-btn color="error" icon="mdi-delete" variant="text">
+                          </v-btn>
                         </div>
                       </div>
                     </v-list-item>
@@ -379,7 +387,7 @@
                   auto-grow rows="2" hide-details density="compact">
                 </v-textarea>
                 <v-btn color="invertida" size="small" prepend-icon="mdi-send" class="w-100 mt-4" rounded="xl"
-                  variant="elevated" @click="" :disabled="botonIdea">
+                  variant="elevated" @click="comentarioIdea(i.id_idea)" :disabled="botonIdea" :loading="cargandoComentarioIdea">
                   Comentar
                 </v-btn>
               </v-form>
@@ -395,7 +403,6 @@
         Actualmente no existen ideas registradas en el sistema.
       </v-alert>
     </v-col>
-    {{ id_logeado }}
   </v-container>
 
   <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
@@ -433,6 +440,7 @@ const eliminar = ref(null)
 const botonDec = ref(true)
 const botonIdea = ref(true)
 const cargandoComentario = ref(false)
+const cargandoComentarioIdea = ref(false)
 
 
 watch(val_dec.value, (newVal) => {
@@ -518,6 +526,7 @@ function comentarioDec(id) {
         message: result.data?.mensaje || 'Credenciales inválidas'
       })
       recargar()
+      val_dec.value = {}
       cargandoComentario.value = false
     }).catch((err) => {
       alerta.value.notify({
@@ -526,6 +535,30 @@ function comentarioDec(id) {
         message: err.mensaje || 'Credenciales inválidas'
       })
       cargandoComentario.value = false
+    });
+}
+
+function comentarioIdea(id) {
+  val_idea.value.id_idea = id
+  val_idea.value.id_pro = proyecto.value.id_pro
+  cargandoComentarioIdea.value = true
+  apiCall('ideas/crearComentario', 'POST', val_idea.value)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      val_idea.value = {}
+      cargandoComentarioIdea.value = false
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+      cargandoComentarioIdea.value = false
     });
 }
 

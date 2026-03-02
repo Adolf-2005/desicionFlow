@@ -31,12 +31,9 @@ class decisionesM {
           })
         })
         const pertenece = miembros.some(m => m.id_usu === id_usu)
-        if (!pertenece) {
+        if (!pertenece && responsable != id_usu) {
           return reject({ status: 401, mensaje: 'No perteneces al equipo' })
-        }
-        if (responsable != id_usu) {
-          return reject({ status: 401, mensaje: 'No perteneces al equipo' })
-        }
+        } 
         db.query(sql, insert, function (err, res) {
           if (err) {
             return reject({ status: 500, mensaje: err })
@@ -95,7 +92,7 @@ class decisionesM {
   }
 
   eliminar(datos) {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const { id_deci, id_pro, id_usu } = datos
       const sql = 'DELETE FROM decisiones WHERE id_deci = ?'
       const sqlCreador = 'SELECT id_creador FROM decisiones WHERE id_deci = ?'

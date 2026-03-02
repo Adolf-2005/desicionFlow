@@ -13,6 +13,17 @@ class comentariosC {
     })
   }
 
+  crearComentarioIdea(datos) {
+    return new Promise((resolve, reject) => {
+      comentariosM.crearComentarioIdea(datos)
+      .then((result) => {
+        resolve(result)
+      }).catch((err) => {
+        reject(err)
+      });
+    })
+  }
+
   editar(datos) {
     return new Promise((resolve, reject) => {
       comentariosM.editar(datos)
@@ -24,9 +35,20 @@ class comentariosC {
     })
   }
 
-  eliminar(datos) {
+  eliminarComIdea(datos) {
     return new Promise((resolve, reject) => {
-      comentariosM.eliminar(datos)
+      comentariosM.eliminarComIdea(datos)
+      .then((result) => {
+        resolve(result)
+      }).catch((err) => {
+        reject(err)
+      });
+    })
+  }
+
+  eliminarComDec(datos) {
+    return new Promise((resolve, reject) => {
+      comentariosM.eliminarComIdea(datos)
       .then((result) => {
         resolve(result)
       }).catch((err) => {

@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
 const protegerRuta = require('../middlewares/auth')
-const decisionesC = require('../controllers/decisionesC')
+const ideasC = require('../controllers/ideasC')
 const comentariosC = require('../controllers/comentariosC')
 
 /* GET home page. */
 router.post('/crear', protegerRuta, function (req, res, next) {
-  decisionesC.crear(req.body)
+  ideasC.crear(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
@@ -15,7 +15,7 @@ router.post('/crear', protegerRuta, function (req, res, next) {
 });
 
 router.post('/crearComentario', protegerRuta, function (req, res, next) {
-  comentariosC.crearComentario(req.body)
+  comentariosC.crearComentarioIdea(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
@@ -24,7 +24,7 @@ router.post('/crearComentario', protegerRuta, function (req, res, next) {
 });
 
 router.put('/editar', protegerRuta, function (req, res, next) {
-  decisionesC.editar(req.body)
+  ideasC.editar(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
@@ -33,7 +33,7 @@ router.put('/editar', protegerRuta, function (req, res, next) {
 });
 
 router.delete('/eliminar', protegerRuta, function (req, res, next) {
-  decisionesC.eliminar(req.body)
+  ideasC.eliminar(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
@@ -42,7 +42,7 @@ router.delete('/eliminar', protegerRuta, function (req, res, next) {
 });
 
 router.delete('/eliminarComentario', protegerRuta, function (req, res, next) {
-  comentariosC.eliminarComDec(req.body)
+  comentariosC.eliminarComIdea(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
@@ -51,7 +51,7 @@ router.delete('/eliminarComentario', protegerRuta, function (req, res, next) {
 });
 
 router.put('/cambiarEstado', protegerRuta, function (req, res, next) {
-  decisionesC.cambiarEstado(req.body)
+  ideasC.cambiarEstado(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
