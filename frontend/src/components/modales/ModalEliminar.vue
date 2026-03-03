@@ -47,5 +47,10 @@ function confirmar() {
   loading.value = true
   emits('confirmar', itemData)
 }
-defineExpose({ abrir, cerrar })
+
+function errorApi() {
+  loading.value = false
+}
+
+defineExpose({ abrir, cerrar, errorApi })
 </script>

@@ -48,7 +48,7 @@ class comentariosC {
 
   eliminarComDec(datos) {
     return new Promise((resolve, reject) => {
-      comentariosM.eliminarComIdea(datos)
+      comentariosM.eliminarComDec(datos)
       .then((result) => {
         resolve(result)
       }).catch((err) => {

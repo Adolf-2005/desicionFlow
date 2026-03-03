@@ -50,8 +50,8 @@ router.delete('/eliminarComentario', protegerRuta, function (req, res, next) {
     });
 });
 
-router.put('/cambiarEstado', protegerRuta, function (req, res, next) {
-  ideasC.cambiarEstado(req.body)
+router.post('/convertirDecision', protegerRuta, function (req, res, next) {
+  ideasC.convertirDecision(req.body)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {

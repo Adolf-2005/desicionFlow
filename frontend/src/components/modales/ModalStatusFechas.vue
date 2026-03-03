@@ -15,7 +15,7 @@
         <v-form ref="form" v-model="valido">
           <v-col v-if="estadoDec">
             <v-select v-model="record.estado" label="Estado de la decisión"
-              :items="['Abierta', 'Cerrada', 'En evaluacion']" variant="outlined" density="compact"
+              :items="record.resultado ? cerrarDec : evaluacion" variant="outlined" density="compact"
               :rules="[rules.required]">
             </v-select>
           </v-col>
@@ -68,6 +68,11 @@
                   variant="outlined" density="compact" :rules="[rules.required]">
                 </v-select>
               </v-col>
+              <v-col cols="12" v-if="record.estado == 'Cerrada'">
+                <v-textarea v-model="record.resultado" label="Resultados de la decisión" rounded="lg" variant="outlined"
+                  auto-grow rows="3" hide-details density="compact">
+                </v-textarea>
+              </v-col>
               <v-col cols="12">
                 <v-textarea v-model="record.observacion" label="Observaciones" rounded="lg" variant="outlined" auto-grow
                   rows="3" hide-details density="compact">
@@ -75,6 +80,28 @@
               </v-col>
             </v-row>
           </v-col>
+
+          <v-col v-if="proponerIdea || editarIdea || estadoIdea">
+            <v-row v-if="!estadoIdea">
+              <v-col cols="12">
+                <v-text-field v-model="record.titulo" label="Titulo" variant="outlined" density="compact"
+                  :rules="[rules.empty, rules.required]"></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-textarea v-model="record.descripcion" label="Descripción" rounded="lg" variant="outlined" auto-grow
+                  rows="3" hide-details density="compact" :rules="[rules.empty, rules.required]">
+                </v-textarea>
+              </v-col>
+            </v-row>
+            <v-row v-else>
+              <v-col cols="12">
+                <v-select v-model="record.estado" label="Estado de la idea" :items="['Evaluada', 'Descartada']"
+                  variant="outlined" density="compact" :rules="[rules.required]">
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-col>
+
           <v-btn color="primary" size="large" variant="elevated" block rounded="pill" :loading="cargando"
             :disabled="!valido" @click="enviarApi">
             {{ titulo }}
@@ -106,6 +133,11 @@ const estadoDec = ref(false)
 const resultados = ref(false)
 const nuevaDec = ref(false)
 const editDec = ref(false)
+const proponerIdea = ref(false)
+const editarIdea = ref(false)
+const estadoIdea = ref(false)
+const cerrarDec = ['En evaluacion', 'Cerrada']
+const evaluacion = ['En evaluacion', 'Abierta']
 
 const props = defineProps({
   listaEquipos: { type: Array, default: () => [] },
@@ -224,7 +256,7 @@ function enviarApi() {
         })
         cargando.value = false
       });
-      
+
   } else if (editDec.value) {
     apiCall('decisiones/editar', 'PUT', record.value)
       .then((result) => {
@@ -243,7 +275,43 @@ function enviarApi() {
         })
         cargando.value = false
       });
-  }
+  } else if (proponerIdea.value) {
+    apiCall('ideas/crear', 'POST', record.value)
+      .then((result) => {
+        alerta.value.notify({
+          type: 'success',
+          title: '',
+          message: result.data?.mensaje || 'Credenciales inválidas'
+        })
+        emit('recargar')
+        cerrar()
+      }).catch((err) => {
+        alerta.value.notify({
+          type: 'error',
+          title: '',
+          message: err.mensaje || 'Credenciales inválidas'
+        })
+        cargando.value = false
+      });
+  } else if (editarIdea.value || estadoIdea.value) {
+    apiCall('ideas/editar', 'PUT', record.value)
+      .then((result) => {
+        alerta.value.notify({
+          type: 'success',
+          title: '',
+          message: result.data?.mensaje || 'Credenciales inválidas'
+        })
+        emit('recargar')
+        cerrar()
+      }).catch((err) => {
+        alerta.value.notify({
+          type: 'error',
+          title: '',
+          message: err.mensaje || 'Credenciales inválidas'
+        })
+        cargando.value = false
+      });
+  } 
 }
 
 const nombresEquipo = (item) => {
@@ -319,6 +387,27 @@ function editarDec(datos = {}) {
   editDec.value = true
 }
 
+function crearIdea(datos = {}) {
+  record.value = { ...datos };
+  show.value = true;
+  titulo.value = 'Proponer idea'
+  proponerIdea.value = true
+}
+
+function editarIdeaAbrir(datos = {}) {
+  record.value = { ...datos };
+  show.value = true;
+  titulo.value = 'Editar idea'
+  editarIdea.value = true
+}
+
+function abrirEstadoIdea(datos = {}) {
+  record.value = { ...datos };
+  show.value = true;
+  titulo.value = 'Estado idea'
+  estadoIdea.value = true
+}
+
 
 function cerrar() {
   cargando.value = false
@@ -331,8 +420,11 @@ function cerrar() {
   resultados.value = false
   nuevaDec.value = false
   editDec.value = false
+  proponerIdea.value = false
+  editarIdea.value = false
+  estadoIdea.value = false
 }
 
-defineExpose({ abrirFechas, abrirEstado, abrirEquipo, abrirLider, abrirEstadoDec, abrirResultados, crearDecision, editarDec, cerrar })
+defineExpose({ abrirFechas, abrirEstado, abrirEquipo, abrirLider, abrirEstadoDec, abrirResultados, crearDecision, editarDec, crearIdea, editarIdeaAbrir, abrirEstadoIdea, cerrar })
 
 </script>

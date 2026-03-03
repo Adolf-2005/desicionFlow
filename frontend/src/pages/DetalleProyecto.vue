@@ -117,7 +117,7 @@
           @click="statusFecha.crearDecision({ id_creador: id_logeado, id_pro: proyecto.id_pro })">
         </v-btn>
         <v-btn color="info" text="Proponer ideas" prepend-icon="mdi-plus" v-if="equipo && perteneceMiembro(id_logeado)"
-          @click="statusFecha.crearDecision({ id_creador: id_logeado, id_pro: proyecto.id_pro })">
+          @click="statusFecha.crearIdea({ id_creador: id_logeado, id_pro: proyecto.id_pro })">
         </v-btn>
 
       </v-card-actions>
@@ -212,8 +212,9 @@
                             {{ c.comentario }}
                           </p>
                         </div>
-                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_">
-                          <v-btn color="error" icon="mdi-delete" variant="text">
+                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_creador">
+                          <v-btn color="error" icon="mdi-delete" variant="text"
+                            @click="() => { eliminar.abrir('Comentario', { id_pro: proyecto.id_pro, id_com_dec: c.id_com_dec }), tipoEliminar = 'decisioncom' }">
                           </v-btn>
                         </div>
                       </div>
@@ -256,14 +257,18 @@
         </v-card-text>
         <v-card-actions v-if="(id_logeado === d.id_creador) || (id_logeado === id_responsable)">
           <v-btn color="info" text="Editar" prepend-icon="mdi-pencil"
+            v-if="d.estado == 'Abierta' || d.estado == 'abierta'"
             @click="statusFecha.editarDec(constructorIdea(d))"></v-btn>
           <v-btn color="info" text="Resultado" prepend-icon="mdi-file-chart-outline"
+            v-if="!d.resultado && (d.estado == 'en evaluacion' || d.estado == 'En evaluacion')"
             @click="statusFecha.abrirResultados({ id_deci: d.id_deci, id_pro: proyecto.id_pro })"></v-btn>
           <v-btn color="info" text="Cambiar estado"
-            @click="statusFecha.abrirEstadoDec({ id_deci: d.id_deci, id_pro: proyecto.id_pro })"
-            prepend-icon="mdi-sync-circle" v-if="id_logeado === id_responsable"></v-btn>
+            @click="statusFecha.abrirEstadoDec({ id_deci: d.id_deci, id_pro: proyecto.id_pro, resultado: d.resultado })"
+            prepend-icon="mdi-sync-circle"
+            v-if="id_logeado === id_responsable && d.estado !== 'cerrada' && d.estado !== 'Cerrada'"></v-btn>
           <v-btn color="error" text="Eliminar" prepend-icon="mdi-delete"
-            @click="eliminar.abrir(d.titulo, { id_deci: d.id_deci, id_pro: d.id_pro })"></v-btn>
+            v-if="id_logeado === id_responsable && d.estado !== 'cerrada' && d.estado !== 'Cerrada'"
+            @click="() => { eliminar.abrir(d.titulo, { id_deci: d.id_deci, id_pro: d.id_pro }); tipoEliminar = 'decision' }"></v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
@@ -353,8 +358,9 @@
                             {{ c.comentario }}
                           </p>
                         </div>
-                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_">
-                          <v-btn color="error" icon="mdi-delete" variant="text">
+                        <div v-if="id_logeado === proyecto.id_responsable || id_logeado === c.id_creador">
+                          <v-btn color="error" icon="mdi-delete" variant="text"
+                            @click="() => { eliminar.abrir('Comentario', { id_pro: proyecto.id_pro, id_com_idea: c.id_com_idea }), tipoEliminar = 'ideascom' }">
                           </v-btn>
                         </div>
                       </div>
@@ -387,13 +393,33 @@
                   auto-grow rows="2" hide-details density="compact">
                 </v-textarea>
                 <v-btn color="invertida" size="small" prepend-icon="mdi-send" class="w-100 mt-4" rounded="xl"
-                  variant="elevated" @click="comentarioIdea(i.id_idea)" :disabled="botonIdea" :loading="cargandoComentarioIdea">
+                  variant="elevated" @click="comentarioIdea(i.id_idea)" :disabled="botonIdea"
+                  :loading="cargandoComentarioIdea">
                   Comentar
                 </v-btn>
               </v-form>
             </v-card>
           </v-col>
         </v-card-text>
+        <v-card-actions>
+          <v-btn color="info" text="Editar" prepend-icon="mdi-pencil"
+            v-if="i.estado == 'Activa' || i.estado == 'activa'"
+            @click="statusFecha.editarIdeaAbrir({ id_idea: i.id_idea, titulo: i.titulo, descripcion: i.descripcion, id_pro: proyecto.id_pro, id_creador: i.id_creador })">
+          </v-btn>
+          <v-btn color="info" text="Cambiar estado"
+            @click="statusFecha.abrirEstadoIdea({ id_idea: i.id_idea, id_pro: proyecto.id_pro, id_creador: i.id_creador })"
+            prepend-icon="mdi-sync-circle"
+            v-if="id_logeado === id_responsable && i.estado !== 'descartada' && i.estado !== 'Descartada' && i.estado !== 'Aceptada' && i.estado !== 'aceptada'">
+          </v-btn>
+          <v-btn color="error" text="Eliminar" prepend-icon="mdi-delete"
+            v-if="id_logeado === id_responsable && i.estado !== 'descartada' && i.estado !== 'Descartada' && i.estado !== 'aceptada' && i.estado !== 'Aceptada'"
+            @click="() => { eliminar.abrir(i.titulo, { id_idea: i.id_idea, id_pro: proyecto.id_pro, id_creador: i.id_creador }); tipoEliminar = 'ideas' }">
+          </v-btn>
+          <v-btn color="info" text="Llevar a decisión" @click="() => { dialog = true; id_idea_con = i.id_idea }"
+            prepend-icon="mdi-sync-circle"
+            v-if="id_logeado == id_responsable && i.estado == 'evaluada' || i.estado == 'Evaluada'">
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-col>
 
@@ -405,9 +431,35 @@
     </v-col>
   </v-container>
 
-  <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
+  <ModalEliminar ref="eliminar" @confirmar="eliminarApi" />
   <ModalStatusFechas ref="statusFecha" @recargar="recargar" />
   <Notificacion ref="alerta" />
+  <v-dialog v-model="dialog" max-width="450">
+    <v-card>
+      <v-card-item class="bg-primary text-white">
+        <v-card-title>
+          <v-icon start>mdi-alert-circle</v-icon>
+          Confirmar Conversión
+        </v-card-title>
+      </v-card-item>
+      <v-card-text class="pa-6 text-body-1">
+        ¿Estás seguro de que deseas llevar esta idea a una <b>Decisión</b>?
+        <div class="mt-4 text-caption text-grey-darken-1">
+          * La idea cambiará su estado a "evaluada" y se creará un nuevo registro en el panel de decisiones.
+        </div>
+      </v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions class="pa-4">
+        <v-spacer></v-spacer>
+        <v-btn variant="text" color="grey-darken-1" @click="dialog = false">
+          Cancelar
+        </v-btn>
+        <v-btn color="primary" variant="elevated" :loading="loading" @click="convertirIdea">
+          Sí, continuar
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -441,6 +493,10 @@ const botonDec = ref(true)
 const botonIdea = ref(true)
 const cargandoComentario = ref(false)
 const cargandoComentarioIdea = ref(false)
+const tipoEliminar = ref('')
+const dialog = ref(false)
+const id_idea_con = ref(null)
+const loading = ref(false)
 
 
 watch(val_dec.value, (newVal) => {
@@ -495,7 +551,7 @@ function recargar() {
     });
 }
 
-function eliminarProyecto(data) {
+function eliminarDec(data) {
   apiCall('decisiones/eliminar', 'DELETE', data)
     .then((result) => {
       alerta.value.notify({
@@ -506,12 +562,114 @@ function eliminarProyecto(data) {
       recargar()
       eliminar.value.cerrar()
     }).catch((err) => {
+      eliminar.value.errorApi()
       alerta.value.notify({
         type: 'error',
         title: '',
         message: err.mensaje || 'Credenciales inválidas'
       })
     });
+}
+
+function convertirIdea() {
+  loading.value = true
+  apiCall('ideas/convertirDecision', 'POST', { id_idea: id_idea_con.value, id_pro: proyecto.value.id_pro })
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      dialog.value = false
+      loading.value = false
+    }).catch((err) => {
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+      loading.value = false
+    });
+}
+
+function eliminarIdea(data) {
+  apiCall('ideas/eliminar', 'DELETE', data)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      eliminar.value.cerrar()
+    }).catch((err) => {
+      eliminar.value.errorApi()
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function eliminarComDec(data) {
+  apiCall('decisiones/eliminarComentario', 'DELETE', data)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      eliminar.value.cerrar()
+    }).catch((err) => {
+      eliminar.value.errorApi()
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function eliminarComIdea(data) {
+  apiCall('ideas/eliminarComentario', 'DELETE', data)
+    .then((result) => {
+      alerta.value.notify({
+        type: 'success',
+        title: '',
+        message: result.data?.mensaje || 'Credenciales inválidas'
+      })
+      recargar()
+      eliminar.value.cerrar()
+    }).catch((err) => {
+      eliminar.value.errorApi()
+      alerta.value.notify({
+        type: 'error',
+        title: '',
+        message: err.mensaje || 'Credenciales inválidas'
+      })
+    });
+}
+
+function eliminarApi(data) {
+  switch (tipoEliminar.value) {
+    case 'decision':
+      eliminarDec(data)
+      break;
+    case 'decisioncom':
+      eliminarComDec(data)
+      break;
+    case 'ideas':
+      eliminarIdea(data)
+      break;
+    case 'ideascom':
+      eliminarComIdea(data)
+      break;
+    default:
+      break;
+  }
 }
 
 function comentarioDec(id) {
@@ -607,9 +765,13 @@ const estadoColor = (status) => {
   const estado = capitalizar(status)
   return {
     'Abierta': 'warning',
+    'Activa': 'warning',
     'Cerrada': 'success',
+    'Evaluada': 'success',
     'En Evaluacion': 'primary',
-    'En evaluacion': 'primary'
+    'En evaluacion': 'primary',
+    'Aceptada': 'primary',
+    'Descartada': 'error'
   }[estado] || 'status-default'
 }
 

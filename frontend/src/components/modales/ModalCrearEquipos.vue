@@ -150,6 +150,7 @@ function enviarApi() {
   cargando.value = true
   const resp = listaMiembros.value.filter(u => u.rol === 'Jefe')
   if (resp.length == 0) {
+    cargando.value = false
     alerta.value.notify({
       type: 'error',
       title: '',
@@ -170,6 +171,7 @@ function enviarApiEditar() {
   cargando.value = true
   const resp = listaMiembros.value.filter(u => u.rol === 'Jefe')
   if (resp.length == 0) {
+    cargando.value = false
     alerta.value.notify({
       type: 'error',
       title: '',

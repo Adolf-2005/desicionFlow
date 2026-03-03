@@ -212,7 +212,7 @@ class comentariosM {
     return new Promise(async (resolve, reject) => {
       const { id_com_dec, id_usu, id_pro } = datos
       const sqlVal = 'SELECT c.id_val, d.valoracion, v.puntaje, v.id_creador, d.id_deci FROM comentarios_dec c INNER JOIN valoracion_dec v ON c.id_val = v.id_val INNER JOIN decisiones d ON d.id_deci = v.id_deci WHERE c.id_com_dec = ?'
-      const sqlEdit = 'UPDATE valoracion_dec SET valoracion = ? WHERE id_deci = ?'
+      const sqlEdit = 'UPDATE decisiones SET valoracion = ? WHERE id_deci = ?'
       const sql = 'DELETE FROM comentarios_dec WHERE id_com_dec = ?'
       const sqlResponsable = 'SELECT id_responsable FROM proyecto WHERE id_pro = ?'
       try {
@@ -273,9 +273,9 @@ class comentariosM {
 
   eliminarComIdea(datos) {
     return new Promise(async (resolve, reject) => {
-      const { id_com_dec, id_usu, id_pro } = datos
+      const { id_com_idea, id_usu, id_pro } = datos
       const sqlVal = 'SELECT c.id_val, i.valoracion, v.puntaje, v.id_creador, i.id_idea FROM comentarios_idea c INNER JOIN valoracion_idea v ON c.id_val = v.id_val INNER JOIN ideas i ON i.id_idea = v.id_idea WHERE c.id_com_idea = ?'
-      const sqlEdit = 'UPDATE valoracion_idea SET valoracion = ? WHERE id_idea = ?'
+      const sqlEdit = 'UPDATE ideas SET valoracion = ? WHERE id_idea = ?'
       const sql = 'DELETE FROM comentarios_idea WHERE id_com_idea = ?'
       const sqlResponsable = 'SELECT id_responsable FROM proyecto WHERE id_pro = ?'
       try {
@@ -291,7 +291,7 @@ class comentariosM {
           })
         })
         const comentariosDatos = await new Promise((resolve, reject) => {
-          db.query(sqlVal, [id_com_dec], function (err, res) {
+          db.query(sqlVal, [id_com_idea], function (err, res) {
             if (err) {
               return reject({ status: 500, mensaje: err })
             }
@@ -305,6 +305,9 @@ class comentariosM {
           return reject({ status: 401, mensaje: 'No tienes permisos para realizar esta acción' })
         }
         let valoracionFinal = parseFloat(comentariosDatos.valoracion) - parseFloat(comentariosDatos.puntaje)
+        console.log('resultado' + valoracionFinal);
+        console.log('valoracion' + comentariosDatos.valoracion);
+        console.log('puntaje' + comentariosDatos.puntaje);
         const valoracionEditada = await new Promise((resolve, reject) => {
           db.query(sqlEdit, [valoracionFinal, comentariosDatos.id_idea], function (err, res) {
             if (err) {
@@ -319,7 +322,7 @@ class comentariosM {
         if (valoracionEditada.status != 200) {
           return reject(valoracionEditada)
         }
-        db.query(sql, [id_com_dec], function (err, res) {
+        db.query(sql, [id_com_idea], function (err, res) {
           if (err) {
             return reject({ status: 500, mensaje: err })
           }

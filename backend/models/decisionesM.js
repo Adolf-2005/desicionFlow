@@ -3,13 +3,10 @@ const db = require('../database/connection');
 
 class decisionesM {
 
-  crear(datos) {
+  verificar(id_pro, id_usu) {
     return new Promise(async (resolve, reject) => {
-      const { id_pro, titulo, descripcion, id_creador, id_usu, estado, impacto, observacion } = datos
       const sqlMiembro = 'SELECT m.id_usu FROM proyecto p INNER JOIN miembros m ON p.id_equipo = m.id_equi WHERE p.id_pro = ?'
-      const sql = 'INSERT INTO decisiones (id_deci, id_pro, titulo, descripcion, id_creador, estado, impacto, observacion) VALUES (?,?,?,?,?,?,?,?)'
       const sqlResponsable = 'SELECT id_responsable FROM proyecto WHERE id_pro = ?'
-      const insert = [uuidv4(), id_pro, titulo, descripcion, id_creador, estado, impacto, observacion]
       try {
         const miembros = await new Promise((resolve, reject) => {
           db.query(sqlMiembro, [id_pro], function (err, res) {
@@ -33,7 +30,22 @@ class decisionesM {
         const pertenece = miembros.some(m => m.id_usu === id_usu)
         if (!pertenece && responsable != id_usu) {
           return reject({ status: 401, mensaje: 'No perteneces al equipo' })
-        } 
+        }
+        resolve(true);
+      } catch (error) {
+        reject(error)
+      }
+
+    })
+  }
+
+  crear(datos) {
+    return new Promise(async (resolve, reject) => {
+      const { id_pro, titulo, descripcion, id_creador, id_usu, estado, impacto, observacion, resultado } = datos
+      const sql = 'INSERT INTO decisiones (id_deci, id_pro, titulo, descripcion, id_creador, estado, impacto, observacion, resultado) VALUES (?,?,?,?,?,?,?,?,?)'
+      const insert = [uuidv4(), id_pro, titulo, descripcion, id_creador, estado, impacto, observacion, resultado]
+      try {
+        await this.verificar(id_pro, id_usu)
         db.query(sql, insert, function (err, res) {
           if (err) {
             return reject({ status: 500, mensaje: err })

@@ -107,7 +107,7 @@ CREATE TABLE ideas (
     descripcion VARCHAR(300),
     id_creador VARCHAR(200),
     valoracion INT DEFAULT 0,
-    estado ENUM('activa', 'evaluada', 'descarta') DEFAULT 'activa',
+    estado ENUM('activa', 'evaluada', 'descartada', 'aceptada') DEFAULT 'activa',
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_pro) REFERENCES proyecto(id_pro) ON DELETE CASCADE,
     FOREIGN KEY (id_creador) REFERENCES usuarios(id_usu) ON DELETE SET NULL, -- FK Agregada

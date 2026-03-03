@@ -35,9 +35,9 @@ class ideasC {
     })
   }
 
-  cambiarEstado(datos) {
+  convertirDecision(datos) {
     return new Promise(async (resolve, reject) => {
-      ideasM.cambiarEstado(datos)
+      ideasM.convertirDecision(datos)
         .then((result) => {
           resolve(result)
         }).catch((err) => {
