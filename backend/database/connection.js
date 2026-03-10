@@ -1,20 +1,31 @@
-require('dotenv').config()
+require('dotenv').config();
+const mysql = require('mysql');
 
-var mysql      = require('mysql');
-var connection = mysql.createConnection({
-  host     : process.env.DB_HOST,
-  user     : process.env.DB_USER,
-  password : process.env.DB_PASSWORD,
-  database : process.env.DB_DATABASE,
-  port: process.env.DB_PORT
+// Usamos createPool en lugar de createConnection
+const connection = mysql.createPool({
+  // Nota: Railway suele usar MYSQLHOST, MYSQLUSER, etc. 
+  // Asegúrate de que en tu panel de Railway las variables se llamen igual que aquí.
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT,
+
+  connectionLimit: 10,
+  waitForConnections: true,
+  queueLimit: 0
 });
- 
-connection.connect(function(err) {
+
+// Verificación de conexión inicial
+connection.getConnection((err, connection) => {
   if (err) {
-    console.error('Error al conectar la base de datos: ' + err.stack);
+    console.error('Error al conectar la base de datos: ' + err.message);
     return;
   }
-  console.log('Conexion exitosa ' + connection.threadId);
+  if (connection) {
+    console.log('Conexión exitosa al Pool de MySQL');
+    connection.release(); // Devuelve la conexión al pool
+  }
 });
 
 module.exports = connection;
