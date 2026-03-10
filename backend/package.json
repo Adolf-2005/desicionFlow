@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "serve": "nodemon ./bin/www",
-    "db:setup":"node setup-db.js"
+    "db:setup": "node setup-db.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -19,7 +19,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "~1.9.1",
     "multer": "^2.0.2",
-    "mysql": "^2.18.1",
+    "mysql2": "^3.19.1",
     "nodemon": "^3.1.11",
     "uuid": "^9.0.1"
   }
