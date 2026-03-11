@@ -1,7 +1,9 @@
 backend/.env
 backend/dist/
 backend/uploads/documents/*
+!backend/uploads/documents/.gitkeep
 backend/uploads/images/*
+!backend/uploads/images/.gitkeep
 
 frontend/node_modules/
 frontend/dist/
