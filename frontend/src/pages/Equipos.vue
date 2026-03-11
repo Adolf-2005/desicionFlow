@@ -119,7 +119,7 @@ async function obtenerEquipos() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -132,7 +132,7 @@ async function obtenerMiembros() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -145,7 +145,7 @@ function recargar() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
   apiCall('usuarios')
@@ -155,7 +155,7 @@ function recargar() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -182,7 +182,7 @@ function guardar(data) {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -204,7 +204,7 @@ function eliminarEquipo(id) {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -225,8 +225,8 @@ function cerrarMiembro() {
 
 function eliminarMiembro() {
   const obj = {
-    id_usu: miembroEliminar.value.id_usu,
-    id_equi: miembroEliminar.value.id_equi
+    id_usu_equi: String(miembroEliminar.value.id_usu),
+    id_equi: String(miembroEliminar.value.id_equi)
   }
   apiCall('equipos/eliminar/miembro', 'DELETE', obj)
     .then((result) => {
@@ -241,7 +241,7 @@ function eliminarMiembro() {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }
@@ -260,7 +260,7 @@ function editarApi(data) {
       alerta.value.notify({
         type: 'error',
         title: '',
-        message: err.data?.mensaje || 'Credenciales inválidas'
+        message: err.mensaje || 'Credenciales inválidas'
       })
     });
 }

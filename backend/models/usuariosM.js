@@ -8,19 +8,17 @@ require('dotenv').config()
 
 class usuariosM {
 
-  todos() {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT id_usu, nombre, apellido, usuario, cedula, rol FROM usuarios WHERE activo = 1'
-      db.query(sql, function (err, res) {
-        if (err) {
-          return reject({ status: 500, mensaje: err })
-        }
-        if (!res.length) {
-          return resolve({ status: 200, mensaje: 'No hay usuarios registrados' })
-        }
-        resolve({ status: 200, mensaje: 'Usuarios consultados con éxito', usuarios: res })
-      })
-    })
+  async todos() {
+    const sql = 'SELECT id_usu, nombre, apellido, usuario, cedula, rol FROM usuarios WHERE activo = 1'
+    try {
+      const [res] = await db.query(sql)
+      if (res.length === 0) {
+        return { status: 200, mensaje: 'No hay usuarios registrados' }
+      }
+      return { status: 200, mensaje: 'Usuarios consultados con éxito', usuarios: res }
+    } catch (error) {
+      throw { status: 500, mensaje: error };
+    }
   }
 
   crear(user) {
@@ -50,31 +48,29 @@ class usuariosM {
     })
   }
 
-  login(user) {
-    return new Promise(async (resolve, reject) => {
-      const { usuario, clave } = user
-      const sql = 'SELECT id_usu, nombre, apellido, usuario, clave, change_pass, cedula, rol FROM usuarios WHERE usuario = ?'
-      db.query(sql, [usuario], async function (err, res) {
-        if (err) {
-          return reject({ status: 500, mensaje: err })
-        }
-        if (!res.length) {
-          return resolve({ status: 404, mensaje: 'Usuario no encontrado' })
-        }
-        const hash = res[0].clave
-        const access = await bcrypt.compare(clave, hash)
-        if (access === true) {
-          const token = jwt.sign({
-            usuario: res[0].usuario,
-            id: res[0].id_usu,
-          }, process.env.JSONWEBTOKEN, { expiresIn: '12h' });
-          const cambio = res[0].change_pass == 1 ? true : false
-          resolve({ status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12, cambio_clave: cambio })
-        } else {
-          resolve({ status: 401, mensaje: 'Contraseña incorrecta' })
-        }
-      })
-    })
+  async login(user) {
+    const { usuario, clave } = user
+    const sql = 'SELECT id_usu, nombre, apellido, usuario, clave, change_pass, cedula, rol FROM usuarios WHERE usuario = ?'
+    try {
+      const [res] = await db.query(sql, [usuario])
+      if (!res.length) {
+        return { status: 404, mensaje: 'Usuario no encontrado' }
+      }
+      const hash = res[0].clave
+      const access = await bcrypt.compare(clave, hash)
+      if (access === true) {
+        const token = jwt.sign({
+          usuario: res[0].usuario,
+          id: res[0].id_usu,
+        }, process.env.JSONWEBTOKEN, { expiresIn: '12h' });
+        const cambio = res[0].change_pass == 1 ? true : false
+        return { status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12, cambio_clave: cambio }
+      } else {
+        return { status: 401, mensaje: 'Contraseña incorrecta' }
+      }
+    } catch (error) {
+      throw { status: 500, mensaje: error };
+    }
   }
 
   cambioClave(datos) {
@@ -104,7 +100,7 @@ class usuariosM {
               return reject({ status: 400, mensaje: 'Usuario no encontrado' })
             }
           })
-          resolve({ status: 200, mensaje: 'Bienvenido'})
+          resolve({ status: 200, mensaje: 'Bienvenido' })
         } else {
           resolve({ status: 401, mensaje: 'Contraseña incorrecta' })
         }

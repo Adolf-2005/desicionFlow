@@ -1,10 +1,8 @@
 require('dotenv').config();
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
 // Usamos createPool en lugar de createConnection
 const connection = mysql.createPool({
-  // Nota: Railway suele usar MYSQLHOST, MYSQLUSER, etc. 
-  // Asegúrate de que en tu panel de Railway las variables se llamen igual que aquí.
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
