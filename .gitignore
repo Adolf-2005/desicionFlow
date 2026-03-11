@@ -1,6 +1,7 @@
 backend/.env
 backend/dist/
-backend/uploads/*
+backend/uploads/documents/*
+backend/uploads/images/*
 
 frontend/node_modules/
 frontend/dist/
