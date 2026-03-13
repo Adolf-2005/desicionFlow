@@ -23,6 +23,15 @@ router.post('/uno', protegerRuta, function (req, res, next) {
     });
 });
 
+router.get('/asignados', protegerRuta, function (req, res, next) {
+  proyectoC.proyectosAsignados(req.body)
+    .then((result) => {
+      res.status(result.status).json(result)
+    }).catch((err) => {
+      res.status(err.status).json(err)
+    });
+});
+
 router.post('/filtros', protegerRuta, function (req, res, next) {
   proyectoC.filtros(req.body.estado)
     .then((result) => {

@@ -144,10 +144,10 @@ async function guardar(data) {
 }
 
 async function editarApi(data) {
-  const id_usu = data.id_usu
+  const id_user = data.id_user
   const datos = capitalizeObject(data)
   datos.cedula = datos.prefijo + datos.cedula
-  datos.id_usu = id_usu
+  datos.id_user = id_user
   await apiCall('usuarios/editar', 'PUT', datos)
     .then((result) => {
       alerta.value.notify({
@@ -169,7 +169,7 @@ async function editarApi(data) {
 
 function editarUsuario(datos) {
   const record = {
-    id_usu: datos.id_usu,
+    id_user: datos.id_usu,
     nombre: datos.nombre,
     apellido: datos.apellido,
     usuario: datos.usuario,
@@ -184,7 +184,7 @@ function editarUsuario(datos) {
 }
 
 async function eliminarUsuario(id) {
-  await apiCall('usuarios/eliminar', 'DELETE', { id_usu: id })
+  await apiCall('usuarios/eliminar', 'DELETE', { id_user: id })
     .then((result) => {
       alerta.value.notify({
         type: result.data?.status == 200 ? 'success' : 'error',

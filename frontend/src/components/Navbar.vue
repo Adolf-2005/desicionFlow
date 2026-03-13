@@ -7,8 +7,14 @@
     <v-divider></v-divider>
 
     <v-list density="compact" nav>
-      <v-list-item v-for="link in items" :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title"
-        :value="link.value"></v-list-item>
+      <template v-for="link in items">
+        <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
+          v-if="link.value != 'usuarios'">
+        </v-list-item>
+        <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
+          v-if="link.value == 'usuarios' && role === 'admin'">
+        </v-list-item>
+      </template>
       <v-list-item prepend-icon="mdi-logout"> <v-btn color="error" @click="logout">Cerrar
           sesión</v-btn></v-list-item>
     </v-list>
@@ -22,8 +28,14 @@
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'left' : undefined" temporary>
       <v-list>
-        <v-list-item v-for="link in items" :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title"
-          :value="link.value"></v-list-item>
+        <template v-for="link in items">
+          <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
+            v-if="link.value != 'usuarios'">
+          </v-list-item>
+          <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
+            v-if="link.value == 'usuarios' && role === 'admin'">
+          </v-list-item>
+        </template>
         <v-list-item prepend-icon="mdi-logout"> <v-btn color="error" @click="logout">Cerrar
             sesión</v-btn></v-list-item>
       </v-list>
@@ -33,11 +45,12 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { getPersonUsuario } from '../utils/authdecode'
+import { getPersonUsuario, getRol } from '../utils/authdecode'
 import { useRouter } from 'vuetify/lib/composables/router.mjs'
 import { removeCookie } from '@/utils/cookies'
 
 const usuario = ref(getPersonUsuario())
+const role = ref(getRol()?.toLowerCase());
 const items = [
   {
     title: 'Inicio',

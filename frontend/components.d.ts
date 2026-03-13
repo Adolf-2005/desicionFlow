@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     BotonTema: typeof import('./src/components/BotonTema.vue')['default']
+    Cargando: typeof import('./src/components/Cargando.vue')['default']
     DocumentoBox: typeof import('./src/components/DocumentoBox.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     ImagenBox: typeof import('./src/components/ImagenBox.vue')['default']

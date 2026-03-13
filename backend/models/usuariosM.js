@@ -21,31 +21,23 @@ class usuariosM {
     }
   }
 
-  crear(user) {
-    return new Promise(async (resolve, reject) => {
-      const { nombre, apellido, usuario, clave, cedula, rol } = user
-      const sql = 'INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol) VALUES (?,?,?,?,?,?,?)'
-      const hash = await bcrypt.hash(clave, saltRounds);
-      const insert = [uuidv4(), nombre, apellido, usuario.toLowerCase(), hash, cedula, rol]
-      try {
-        db.query(sql, insert, function (err, res) {
-          if (err) {
-            if (err.errno == 1062) {
-              if (err.sqlMessage.includes('cedula')) {
-                return reject({ status: 409, mensaje: 'Ya existe un usuario con la cedula ' + cedula })
-              }
-              if (err.sqlMessage.includes('usuario')) {
-                return reject({ status: 409, mensaje: 'Ya esta registrado el nombre de usuario' })
-              }
-            }
-            return reject({ status: 500, mensaje: err })
-          }
-          resolve({ status: 201, mensaje: 'Usuario creado' })
-        })
-      } catch (error) {
-        reject(error)
+  async crear(user) {
+    const { nombre, apellido, usuario, clave, cedula, rol } = user
+    const sql = 'INSERT INTO usuarios (id_usu, nombre, apellido, usuario, clave, cedula, rol) VALUES (?,?,?,?,?,?,?)'
+    const hash = await bcrypt.hash(clave, saltRounds);
+    const insert = [uuidv4(), nombre, apellido, usuario.toLowerCase(), hash, cedula, rol]
+    try {
+      await db.query(sql, insert)
+      return { status: 201, mensaje: 'Usuario creado' }
+    } catch (error) {
+      if (error.sqlMessage.includes('cedula')) {
+        throw { status: 409, mensaje: 'Ya existe un usuario con la cedula ' + cedula }
       }
-    })
+      if (error.sqlMessage.includes('usuario')) {
+        throw { status: 409, mensaje: 'Ya esta registrado el nombre de usuario' }
+      }
+      throw { status: 500, mensaje: error };
+    }
   }
 
   async login(user) {
@@ -62,6 +54,7 @@ class usuariosM {
         const token = jwt.sign({
           usuario: res[0].usuario,
           id: res[0].id_usu,
+          rol:res[0].rol
         }, process.env.JSONWEBTOKEN, { expiresIn: '12h' });
         const cambio = res[0].change_pass == 1 ? true : false
         return { status: 200, mensaje: 'Bienvenido ' + res[0].usuario, token: token, expiresIn: 12, cambio_clave: cambio }
@@ -73,77 +66,68 @@ class usuariosM {
     }
   }
 
-  cambioClave(datos) {
-    return new Promise((resolve, reject) => {
-      const { actual, clave, usuario } = datos
-      const sql = 'SELECT clave, change_pass FROM usuarios WHERE usuario = ?'
-      const sqlChange = 'UPDATE usuarios SET clave = ?, change_pass = ? WHERE usuario = ?'
-      db.query(sql, [usuario], async function (err, res) {
-        if (err) {
-          return reject({ status: 500, mensaje: err })
+  async cambioClave(datos) {
+    const { actual, clave, usuario } = datos
+    const sql = 'SELECT clave, change_pass FROM usuarios WHERE usuario = ?'
+    const sqlChange = 'UPDATE usuarios SET clave = ?, change_pass = ? WHERE usuario = ?'
+    try {
+      const [res] = await db.query(sql, [usuario])
+      if (!res.length) {
+        return { status: 404, mensaje: 'Usuario no encontrado' }
+      }
+      if (res[0].change_pass == 0) {
+        return { status: 401, mensaje: 'Cambio no aprobado' }
+      }
+      const hash = res[0].clave
+      const access = await bcrypt.compare(actual, hash)
+      if (access === true) {
+        const hashPass = await bcrypt.hash(clave, saltRounds);
+        const [resPass] = await db.query(sqlChange, [hashPass, usuario, 0])
+        if (resPass.affectedRows === 0) {
+          return { status: 400, mensaje: 'Usuario no encontrado' }
         }
-        if (!res.length) {
-          return resolve({ status: 404, mensaje: 'Usuario no encontrado' })
-        }
-        if (res[0].change_pass == 0) {
-          return reject({ status: 401, mensaje: 'Cambio no aprobado' })
-        }
-        const hash = res[0].clave
-        const access = await bcrypt.compare(actual, hash)
-        if (access === true) {
-          const hashPass = await bcrypt.hash(clave, saltRounds);
-          db.query(sqlChange, [hashPass, usuario, 0], async function (err, res) {
-            if (err) {
-              return reject({ status: 500, mensaje: err })
-            }
-            if (res.affectedRows === 0) {
-              return reject({ status: 400, mensaje: 'Usuario no encontrado' })
-            }
-          })
-          resolve({ status: 200, mensaje: 'Bienvenido' })
-        } else {
-          resolve({ status: 401, mensaje: 'Contraseña incorrecta' })
-        }
-      })
-    })
+        return { status: 200, mensaje: 'Bienvenido' }
+      } else {
+        return { status: 401, mensaje: 'Contraseña incorrecta' }
+      }
+    } catch (error) {
+      throw { status: 500, mensaje: error };
+    }
+
   }
 
-  editar(user) {
-    return new Promise((resolve, reject) => {
-      const { nombre, apellido, cedula, rol, id_usu } = user
-      const sql = 'UPDATE usuarios SET nombre=?, apellido=?, cedula=?, rol =? WHERE id_usu =?'
-      const edit = [nombre, apellido, cedula, rol, id_usu]
-      if (!id_usu || !cedula || !nombre || !apellido) {
-        return reject({ status: 400, mensaje: 'Datos incompletos' })
+  async editar(user) {
+    const { nombre, apellido, cedula, rol, id_user } = user
+    const sql = 'UPDATE usuarios SET nombre=?, apellido=?, cedula=?, rol=? WHERE id_usu =?'
+    const edit = [nombre, apellido, cedula, rol, id_user]
+    if (!id_user || !cedula || !nombre || !apellido) {
+      return { status: 400, mensaje: 'Datos incompletos' }
+    }
+    try {
+      const [res] = await db.query(sql, edit)
+      if (res.affectedRows === 0) {
+        return { status: 400, mensaje: 'Usuario no encontrado' }
       }
-      db.query(sql, edit, function (err, res) {
-        if (err) {
-          return reject({ status: 500, mensaje: err })
-        }
-        if (res.affectedRows === 0) {
-          return reject({ status: 400, mensaje: 'Usuario no encontrado' })
-        }
-        resolve({ status: 200, mensaje: 'Usuario editado con éxito' })
-      })
-    })
+      return { status: 200, mensaje: 'Usuario editado con éxito' }
+    } catch (error) {
+      throw { status: 500, mensaje: error };
+    }
   }
 
-  eliminar(id_usu) {
-    return new Promise((resolve, reject) => {
-      const sql = 'UPDATE usuarios SET activo = ? WHERE id_usu = ?'
-      if (!id_usu) {
-        return reject({ status: 404, mensaje: 'Datos incompletos' })
+  async eliminar(id_user) {
+    const sql = 'UPDATE usuarios SET activo = ? WHERE id_usu = ?'
+    if (!id_user) {
+      return { status: 404, mensaje: 'Datos incompletos' }
+    }
+    try {
+      const [res] = await db.query(sql, [0, id_user])
+      if (res.affectedRows === 0) {
+        return { status: 404, mensaje: 'Usuario no encontrado' }
       }
-      db.query(sql, [0, id_usu], function (err, res) {
-        if (err) {
-          return reject({ status: 500, mensaje: err })
-        }
-        if (res.affectedRows === 0) {
-          return reject({ status: 404, mensaje: 'Usuario no encontrado' })
-        }
-        resolve({ status: 200, mensaje: 'Usuario eliminado con éxito' })
-      })
-    })
+      return { status: 200, mensaje: 'Usuario eliminado con éxito' }
+    } catch (error) {
+      throw { status: 500, mensaje: error };
+    }
   }
 }
 

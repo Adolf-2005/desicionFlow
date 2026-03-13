@@ -1,6 +1,6 @@
 <template>
   <v-container class="pa-0 pa-sm-4">
-    <v-card-item title="Panel de control" class="px-2 px-sm-0 mt-5 mb-4">
+    <v-card-item title="Panel de control" class="px-2 px-sm-0 mt-5 mb-4" v-if="rol === 'admin'">
       <v-row class="pt-2">
         <v-col cols="12" sm="auto" align="center" justify="center">
           <v-btn text="Nuevo proyecto" color="primary" prepend-icon="mdi-plus" @click="formulario.abrir()"></v-btn>
@@ -10,7 +10,7 @@
     <v-card-title>
       Lista de proyectos
     </v-card-title>
-    <div v-if="proyectos.length">
+    <div v-if="proyectos.length && !carga">
       <v-col v-for="(p, index) in proyectos" :key="p.id_pro">
         <v-card elevation="5" prepend-icon="mdi-package">
           <template #title>
@@ -21,7 +21,8 @@
                 </span>
               </v-col>
               <v-col cols="12" sm="6" class="d-flex justify-sm-end">
-                <v-btn color="secondary" @click="$router.push(`detallesProyecto/${p.id_pro}`)" text="Ver detalles" class="rounded-pill" prepend-icon="mdi-eye">
+                <v-btn color="secondary" @click="$router.push(`detallesProyecto/${p.id_pro}`)" text="Ver detalles"
+                  class="rounded-pill" prepend-icon="mdi-eye">
                 </v-btn>
               </v-col>
             </v-row>
@@ -114,26 +115,28 @@
           </v-card-text>
           <v-card-actions>
             <v-row class="pt-2">
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center" v-if="rol === 'admin'">
                 <v-btn text="Editar proyecto" color="primary" prepend-icon="mdi-plus"
                   @click="editarProyecto(p)"></v-btn>
               </v-col>
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center"
+                v-if="rol === 'admin' || responsable === p.id_responsable">
                 <v-btn text="Cambiar estado" color="primary" prepend-icon="mdi-reload" @click="estado(p)"></v-btn>
               </v-col>
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center" v-if="rol === 'admin'">
                 <v-btn text="Cambiar lider" color="primary" prepend-icon="mdi-account-convert"
                   @click="lideres(p)"></v-btn>
               </v-col>
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center" v-if="rol === 'admin'">
                 <v-btn text="Cambiar equipo" color="primary" prepend-icon="mdi-account-group-outline"
                   @click="equipoModal(p)"></v-btn>
               </v-col>
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center"
+                v-if="rol === 'admin' || responsable === p.id_responsable">
                 <v-btn text="Inicio/Cierre" color="primary" prepend-icon="mdi-clipboard-text-clock"
                   @click="fechas(p)"></v-btn>
               </v-col>
-              <v-col cols="auto" align="center" justify="center">
+              <v-col cols="auto" align="center" justify="center" v-if="rol === 'admin'">
                 <v-btn text="Eliminar" color="error" prepend-icon="mdi-delete-empty"
                   @click="eliminar.abrir(p.nombre, { id_pro: p.id_pro, imagen: p.imagen, documento: p.documento })"></v-btn>
               </v-col>
@@ -142,7 +145,10 @@
         </v-card>
       </v-col>
     </div>
-    <Vacio v-else :titulo="'Proyectos'"/>
+    <Vacio v-else-if="!proyectos.length && !carga" :titulo="'Proyectos'" />
+    <div v-else-if="carga">
+      <Cargando />
+    </div>
   </v-container>
 
   <ModalEliminar ref="eliminar" @confirmar="eliminarProyecto" />
@@ -159,6 +165,7 @@ import ModalCrearProyecto from '@/components/modales/ModalCrearProyecto.vue';
 import ModalEliminar from '@/components/modales/ModalEliminar.vue';
 import ModalStatusFechas from '@/components/modales/ModalStatusFechas.vue';
 import { apiCall, apiCallFiles, uploadFilesWithFetch } from '@/utils/apiCall';
+import { getPersonId, getRol } from '@/utils/authdecode';
 import { onMounted, ref } from 'vue';
 
 const proyectos = ref([])
@@ -169,17 +176,23 @@ const eliminar = ref(null)
 const titulo = ref('Crear proyecto')
 const equipos = ref([])
 const usuarios = ref([])
+const rol = ref(getRol()?.toLowerCase())
+const responsable = ref(getPersonId())
+const carga = ref(false)
 
 async function obtenerProyectos() {
+  carga.value = true
   apiCall('proyectos')
     .then((result) => {
       proyectos.value = result.data.proyectos
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
         message: result.data?.mensaje || 'Credenciales inválidas'
       })
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -189,30 +202,36 @@ async function obtenerProyectos() {
 }
 
 function recargar() {
+  carga.value = true
   apiCall('proyectos')
     .then((result) => {
       proyectos.value = result.data.proyectos
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
         message: err.mensaje || 'Credenciales inválidas'
       })
     });
+  carga.value = true
   apiCall('equipos')
     .then((result) => {
       equipos.value = result.data.equipos
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
         message: err.mensaje || 'Credenciales inválidas'
       })
     });
+  carga.value = true
   apiCall('usuarios')
     .then((result) => {
       usuarios.value = result.data.usuarios
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -222,6 +241,7 @@ function recargar() {
 }
 
 async function obtenerEquipos() {
+  carga.value = true
   apiCall('equipos')
     .then((result) => {
       equipos.value = result.data.equipos
@@ -231,6 +251,7 @@ async function obtenerEquipos() {
         })
       }
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -240,10 +261,12 @@ async function obtenerEquipos() {
 }
 
 async function obtenerUsuarios() {
+  carga.value = true
   apiCall('usuarios')
     .then((result) => {
       usuarios.value = result.data.usuarios
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -255,12 +278,14 @@ async function obtenerUsuarios() {
 async function guardar(formData) {
   await uploadFilesWithFetch('proyectos/crear', formData)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
         message: result.data?.mensaje || 'Credenciales inválidas'
       })
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -286,8 +311,10 @@ function eliminarProyecto(datos) {
     documento: urlDoc ? urlDoc.pop() : null,
     id_pro: datos.id_pro
   }
+  carga.value = true
   apiCall('proyectos/eliminar', 'DELETE', obj)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -296,6 +323,7 @@ function eliminarProyecto(datos) {
       recargar()
       eliminar.value.cerrar()
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -319,12 +347,14 @@ function editarProyecto(data) {
 async function editarApi(formData) {
   uploadFilesWithFetch('proyectos/editar', formData)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
         message: result.data?.mensaje || 'Credenciales inválidas'
       })
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',

@@ -1,8 +1,10 @@
 <template>
-  <v-btn class="position-fixed ma-4" @click="$router.back(-1)" icon="mdi-keyboard-backspace">
-  </v-btn>
+  <div class="boton ma-4 pa-2">
+    <v-btn @click="$router.back(-1)" icon="mdi-keyboard-backspace">
+    </v-btn>
+  </div>
 
-  <v-container class="pa-0 pa-sm-4">
+  <v-container class="pa-0 pa-sm-4" v-if="proyecto && !carga">
     <v-card rounded="lg" elevation="5">
       <template #title>
         <h2>
@@ -431,6 +433,10 @@
     </v-col>
   </v-container>
 
+  <div v-else-if="carga">
+    <Cargando />
+  </div>
+
   <ModalEliminar ref="eliminar" @confirmar="eliminarApi" />
   <ModalStatusFechas ref="statusFecha" @recargar="recargar" />
   <Notificacion ref="alerta" />
@@ -497,7 +503,7 @@ const tipoEliminar = ref('')
 const dialog = ref(false)
 const id_idea_con = ref(null)
 const loading = ref(false)
-
+const carga = ref(false)
 
 watch(val_dec.value, (newVal) => {
   if (newVal.puntaje > 0) {
@@ -512,6 +518,7 @@ watch(val_idea.value, (newVal) => {
 }, { deep: true })
 
 function obtenerDatos() {
+  carga.value = true
   apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })
     .then((result) => {
       proyecto.value = result.data.proyecto[0]
@@ -520,12 +527,14 @@ function obtenerDatos() {
       ideas.value = result.data.ideas
       decisiones.value = result.data.des
       id_responsable.value = proyecto.value.id_responsable
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
         message: result.data?.mensaje || 'Credenciales inválidas'
       })
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -535,6 +544,7 @@ function obtenerDatos() {
 }
 
 function recargar() {
+  carga.value = true
   apiCall('proyectos/uno', 'POST', { id_pro: route.value.params.id })
     .then((result) => {
       proyecto.value = result.data.proyecto[0]
@@ -543,6 +553,7 @@ function recargar() {
       ideas.value = result.data.ideas
       decisiones.value = result.data.des
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -552,8 +563,10 @@ function recargar() {
 }
 
 function eliminarDec(data) {
+  carga.value = true
   apiCall('decisiones/eliminar', 'DELETE', data)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -563,6 +576,7 @@ function eliminarDec(data) {
       eliminar.value.cerrar()
     }).catch((err) => {
       eliminar.value.errorApi()
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -573,8 +587,10 @@ function eliminarDec(data) {
 
 function convertirIdea() {
   loading.value = true
+  carga.value = true
   apiCall('ideas/convertirDecision', 'POST', { id_idea: id_idea_con.value, id_pro: proyecto.value.id_pro })
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -584,6 +600,7 @@ function convertirIdea() {
       dialog.value = false
       loading.value = false
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -594,8 +611,10 @@ function convertirIdea() {
 }
 
 function eliminarIdea(data) {
+  carga.value = true
   apiCall('ideas/eliminar', 'DELETE', data)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -605,6 +624,7 @@ function eliminarIdea(data) {
       eliminar.value.cerrar()
     }).catch((err) => {
       eliminar.value.errorApi()
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -614,8 +634,10 @@ function eliminarIdea(data) {
 }
 
 function eliminarComDec(data) {
+  carga.value = true
   apiCall('decisiones/eliminarComentario', 'DELETE', data)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -625,6 +647,7 @@ function eliminarComDec(data) {
       eliminar.value.cerrar()
     }).catch((err) => {
       eliminar.value.errorApi()
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -634,8 +657,10 @@ function eliminarComDec(data) {
 }
 
 function eliminarComIdea(data) {
+  carga.value = true
   apiCall('ideas/eliminarComentario', 'DELETE', data)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -645,6 +670,7 @@ function eliminarComIdea(data) {
       eliminar.value.cerrar()
     }).catch((err) => {
       eliminar.value.errorApi()
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -676,8 +702,10 @@ function comentarioDec(id) {
   val_dec.value.id_deci = id
   val_dec.value.id_pro = proyecto.value.id_pro
   cargandoComentario.value = true
+  carga.value = true
   apiCall('decisiones/crearComentario', 'POST', val_dec.value)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -687,6 +715,7 @@ function comentarioDec(id) {
       val_dec.value = {}
       cargandoComentario.value = false
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -700,8 +729,10 @@ function comentarioIdea(id) {
   val_idea.value.id_idea = id
   val_idea.value.id_pro = proyecto.value.id_pro
   cargandoComentarioIdea.value = true
+  carga.value = true
   apiCall('ideas/crearComentario', 'POST', val_idea.value)
     .then((result) => {
+      carga.value = false
       alerta.value.notify({
         type: 'success',
         title: '',
@@ -711,6 +742,7 @@ function comentarioIdea(id) {
       val_idea.value = {}
       cargandoComentarioIdea.value = false
     }).catch((err) => {
+      carga.value = false
       alerta.value.notify({
         type: 'error',
         title: '',
@@ -797,6 +829,20 @@ onMounted(() => {
 <style scoped>
 .contenido {
   flex-direction: column-reverse;
+}
+
+.boton {
+  position: fixed !important;
+  top: 0;
+  z-index: 9999;
+}
+
+@media (max-width: 1250px) {
+  .boton {
+    position: sticky !important;
+    top: 60px !important;
+    z-index: 9999;
+  }
 }
 
 .border-titulo {

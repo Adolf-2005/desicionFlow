@@ -13,6 +13,7 @@ import CambioClave from '@/pages/CambioClave.vue'
 import Proyectos from '@/pages/Proyectos.vue'
 import Equipos from '@/pages/Equipos.vue'
 import DetalleProyecto from '@/pages/DetalleProyecto.vue'
+import { getRol } from '@/utils/authdecode'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,7 +34,7 @@ const router = createRouter({
       path: '/usuarios',
       name: 'Usuarios',
       component: Usuarios,
-      meta: { title: 'Usuarios', requiresAuth: true }
+      meta: { title: 'Usuarios', requiresAuth: true, role: 'admin' }
     },
     {
       path: '/password',
@@ -72,13 +73,19 @@ const getCookie = (name) => {
 router.beforeEach((to, from, next) => {
   const token = getCookie('user_token'); // Nombre de tu cookie
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const userRole = getRol()?.toLowerCase();
   if (requiresAuth && !token) {
     next({ name: 'Login' });
-  } else if (to.name === 'Login' && token) {
-    next({ path: '/' });
-  } else {
-    next();
   }
+  if (to.name === 'Login' && token) {
+    return next({ path: '/' });
+  }
+  if (requiresAuth && to.meta.role) {
+    if (to.meta.role === 'admin' && userRole !== 'admin') {
+      return next({ path: '/' });
+    }
+  }
+  next();
 });
 
 // Workaround for https://github.com/vitejs/vite/issues/11804

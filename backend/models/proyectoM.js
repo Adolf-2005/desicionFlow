@@ -5,7 +5,6 @@ const path = require('path');
 require('dotenv').config();
 
 class proyectoM {
-
   async todos() {
     const sql = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, 
                p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, 
@@ -22,6 +21,39 @@ class proyectoM {
         return { status: 200, mensaje: 'No hay proyectos activos' };
       }
       return { status: 200, mensaje: 'Proyectos consultados con éxito', proyectos: res };
+    } catch (error) {
+      throw { status: 500, mensaje: error.message || error };
+    }
+  }
+
+  async proyectosAsignados(datos) {
+    const { id_usu } = datos
+    const sqlEqui = 'SELECT * FROM miembros WHERE id_usu = ?'
+    const sqlProyecto = `SELECT p.id_pro, p.nombre AS nom_pro, p.descripcion AS des_pro, 
+               p.id_equipo, e.nombre AS nom_equi, e.descripcion AS des_equi, 
+               p.id_responsable, CONCAT(u.nombre, ' ', u.apellido) AS nom_lider, 
+               u.usuario, p.estado, p.fecha_creacion, p.fecha_inicio, p.fecha_cierre, 
+               p.documento, p.imagen 
+               FROM proyecto p 
+               LEFT JOIN equipos e ON e.id_equi = p.id_equipo 
+               LEFT JOIN usuarios u ON u.id_usu = p.id_responsable WHERE p.id_equipo = ?
+              `
+    let proyectos = []
+    const conect = await db.getConnection()
+    try {
+      await conect.beginTransaction()
+      const [res] = await conect.query(sqlEqui, id_usu)
+      if (res.length === 0) {
+        return { status: 200, mensaje: 'No hay proyectos activos' }
+      }
+      for (const e of res) {
+        const [p] = await conect.query(sqlProyecto, e.id_equi)
+        p.forEach(e => {
+          proyectos.push(e)
+        });
+      }
+      await conect.commit()
+      return { status: 200, mensaje: 'Proyectos consultados con éxito', proyectos: proyectos }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
     }

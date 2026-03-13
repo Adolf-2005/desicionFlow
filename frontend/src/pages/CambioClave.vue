@@ -10,10 +10,10 @@
           </v-toolbar>
           <v-card-text class="pa-8">
             <v-form ref="form" v-model="formLogin">
-              <v-text-field v-model="record.actual" label="Contraseña" prepend-inner-icon="mdi-lock-outline"
+              <v-text-field v-model="record.actual" label="Contraseña actual" prepend-inner-icon="mdi-lock-outline"
                 :type="password" variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]">
               </v-text-field>
-              <v-text-field v-model="record.clave" label="Contraseña" prepend-inner-icon="mdi-lock-outline"
+              <v-text-field v-model="record.clave" label="Contraseña Nueva" prepend-inner-icon="mdi-lock-outline"
                 :type="password" variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]">
               </v-text-field>
               <v-text-field v-model="record.repetido" label="Repite la contraseña" prepend-inner-icon="mdi-lock-outline"

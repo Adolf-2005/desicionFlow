@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card-item title="Panel de control" class="px-2 px-sm-0 mt-5 mb-4">
+    <v-card-item title="Panel de control" class="px-2 px-sm-0 mt-5 mb-4" v-if="rol === 'admin'">
       <v-row class="pt-2">
         <v-col cols="12" sm="auto" align="center" justify="center">
           <v-btn text="Crear usuario" color="primary" prepend-icon="mdi-plus" @click="crearEquipo"></v-btn>
@@ -41,7 +41,7 @@
                       {{ miembro.rol }}
                     </v-chip>
                   </v-col>
-                  <v-col cols="12" sm="6" class="d-flex justify-center justify-sm-end">
+                  <v-col cols="12" sm="6" class="d-flex justify-center justify-sm-end" v-if="rol === 'admin'">
                     <v-btn color="error" size="small" text="Eliminar" @click="abrirMiembro(miembro)"></v-btn>
                   </v-col>
                 </v-row>
@@ -49,7 +49,7 @@
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions v-if="rol === 'admin'">
             <v-btn text="Editar" prepend-icon="mdi-pencil" color="primary" @click="editar(e)"></v-btn>
             <v-btn text="Eliminar" prepend-icon="mdi-delete" color="error"
               @click="eliminar.abrir(e.nombre, e.id_equi)"></v-btn>
@@ -92,6 +92,7 @@ import ModalEliminar from '@/components/modales/ModalEliminar.vue';
 import Notificacion from '@/components/Notificacion.vue';
 import Vacio from '@/components/Vacio.vue';
 import { apiCall } from '@/utils/apiCall';
+import { getRol } from '@/utils/authdecode';
 import { computed, onMounted, ref } from 'vue';
 
 
@@ -105,6 +106,7 @@ const miembroEliminar = ref(null)
 const titulo = ref('Crear equipo')
 const listaUsuario = ref([])
 const loading = ref(false)
+const rol = ref(getRol()?.toLowerCase())
 
 async function obtenerEquipos() {
   apiCall('equipos')

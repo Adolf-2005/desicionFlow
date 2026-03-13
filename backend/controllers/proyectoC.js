@@ -24,6 +24,17 @@ class proyectoC {
     })
   }
 
+  proyectosAsignados(datos) {
+    return new Promise((resolve, reject) => {
+      proyectoM.proyectosAsignados(datos)
+        .then((result) => {
+          resolve(result)
+        }).catch((err) => {
+          reject(err)
+        });
+    })
+  }
+
   filtros(filtro) {
     return new Promise((resolve, reject) => {
       proyectoM.filtros(filtro)
@@ -67,7 +78,7 @@ class proyectoC {
         });
     })
   }
-  
+
   cambiarLider(datos) {
     return new Promise((resolve, reject) => {
       proyectoM.cambiarLider(datos)
@@ -89,7 +100,7 @@ class proyectoC {
         });
     })
   }
- 
+
   cambiarFechas(datos) {
     return new Promise((resolve, reject) => {
       proyectoM.cambiarFechas(datos)

@@ -50,7 +50,7 @@ router.put('/editar', protegerRuta, function (req, res, next) {
 });
 
 router.delete('/eliminar', protegerRuta, function (req, res, next) {
-  usuariosC.eliminar(req.body.id_usu)
+  usuariosC.eliminar(req.body.id_user)
     .then((result) => {
       res.status(result.status).json(result)
     }).catch((err) => {
