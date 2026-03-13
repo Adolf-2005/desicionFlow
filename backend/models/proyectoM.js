@@ -60,21 +60,22 @@ class proyectoM {
   }
 
   async equipos(id_equipo) {
-    const sql = 'SELECT * FROM equipos WHERE id_equi = ?';
-    const sqlMiembro = 'SELECT m.id_equi, m.id_usu, m.rol, m.fecha_ingreso, u.nombre, u.apellido, u.usuario, u.cedula FROM miembros m INNER JOIN usuarios u ON u.id_usu = m.id_usu WHERE m.id_equi = ?';
-
+    const sql = 'SELECT * FROM equipos WHERE id_equi = ?'
+    const sqlMiembro = 'SELECT m.id_equi, m.id_usu, m.rol, m.fecha_ingreso, u.nombre, u.apellido, u.usuario, u.cedula FROM miembros m INNER JOIN usuarios u ON u.id_usu = m.id_usu WHERE m.id_equi = ?'
+    const conect = await db.getConnection()
     try {
-      const [miembros] = await db.query(sqlMiembro, [id_equipo]);
-      const [equipos] = await db.query(sql, [id_equipo]);
-
-      if (equipos.length) {
-        equipos[0].miembros = miembros;
-        return { status: 200, mensaje: 'Exito de consulta', data: equipos };
+      await conect.beginTransaction()
+      const [miembros] = await conect.query(sqlMiembro, [id_equipo])
+      const [listaEquipos] = await conect.query(sql, [id_equipo])
+      await conect.commit()
+      if (listaEquipos.length) {
+        const equipo = listaEquipos[0].miembros = miembros
+        return { status: 200, mensaje: 'Exito de consulta', data: equipo }
       } else {
-        return { mensaje: 'No hay equipos para mostrar', data: equipos, status: 200 };
+        return { mensaje: 'No hay equipos para mostrar', data: equipos, status: 200 }
       }
     } catch (error) {
-      throw { status: 500, mensaje: error.message || error };
+      throw { status: 500, mensaje: error }
     }
   }
 
@@ -135,45 +136,67 @@ class proyectoM {
   }
 
   async crear(datos, files) {
-    const { nombre, descripcion, id_equipo, id_responsable } = datos;
-    const { imagen, documento } = files;
-    const sql = 'INSERT INTO proyecto (id_pro, nombre, descripcion, id_equipo, id_responsable, documento, imagen) VALUES (?,?,?,?,?,?,?)';
-
+    const { nombre, descripcion, id_equipo, id_responsable } = datos
+    const { imagen, documento } = files
+    const sql = 'INSERT INTO proyecto (id_pro, nombre, descripcion, id_equipo, id_responsable, documento, imagen) VALUES (?,?,?,?,?,?,?)'
     if (!nombre || !descripcion) {
-      throw { status: 404, mensaje: 'Datos incompletos' };
+      return { status: 404, mensaje: 'Datos incompletos' }
     }
-
-    const imagenUrl = imagen ? imagen[0].filename : null;
-    const documentoUrl = documento ? documento[0].filename : null;
-    const insert = [uuidv4(), nombre, descripcion, id_equipo, id_responsable, documentoUrl, imagenUrl];
-
+    let imagenUrl
+    let documentoUrl
+    if (imagen) {
+      imagenUrl = imagen[0].filename
+    } else {
+      imagenUrl = null
+    }
+    if (documento) {
+      documentoUrl = documento[0].filename
+    } else {
+      documentoUrl = null
+    }
+    const insert = [uuidv4(), nombre, descripcion, id_equipo, id_responsable, documentoUrl, imagenUrl]
     try {
       await db.query(sql, insert);
-      return { status: 200, mensaje: 'Proyecto creado con éxito' };
+      return { status: 200, mensaje: 'Proyecto creado con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
     }
   }
 
   async editar(datos, files) {
-    const { nombre, descripcion, id_equipo, id_responsable, id_pro } = datos;
-    const { imagen, documento } = files;
-    let editPro = [nombre, descripcion];
-    let edit = [];
-
-    if (id_equipo) { edit.push('id_equipo = ?'); editPro.push(id_equipo); }
-    if (id_responsable) { edit.push('id_responsable = ?'); editPro.push(id_responsable); }
-    if (imagen) { edit.push('imagen = ?'); editPro.push(imagen[0].filename); }
-    if (documento) { edit.push('documento = ?'); editPro.push(documento[0].filename); }
-
-    editPro.push(id_pro);
-    const campos = edit.length > 0 ? ', ' + edit.join(',') : '';
-    const sql = `UPDATE proyecto SET nombre = ?, descripcion = ? ${campos} WHERE id_pro = ?`;
-
+    const { nombre, descripcion, id_equipo, id_responsable, id_pro } = datos
+    const { imagen, documento } = files
+    let editPro = [nombre, descripcion]
+    let edit = []
+    let imagenUrl
+    let documentoUrl
+    if (id_equipo) {
+      edit.push('id_equipo = ?')
+      editPro.push(id_equipo)
+    }
+    if (id_responsable) {
+      edit.push('id_responsable = ?')
+      editPro.push(id_responsable)
+    }
+    if (imagen) {
+      imagenUrl = imagen[0].filename
+      edit.push('imagen = ?')
+      editPro.push(imagenUrl)
+    }
+    if (documento) {
+      documentoUrl = documento[0].filename
+      edit.push('documento = ?')
+      editPro.push(documentoUrl)
+    }
+    editPro.push(id_pro)
+    const campos = ', ' + edit.join(',')
+    const sql = `UPDATE proyecto SET nombre = ?, descripcion = ? ${campos} WHERE id_pro = ?`
     try {
       const [res] = await db.query(sql, editPro);
-      if (res.affectedRows === 0) return { status: 404, mensaje: 'Proyecto no encontrado' };
-      return { status: 200, mensaje: 'Proyecto editado con éxito' };
+      if (res.affectedRows === 0) {
+        return { status: 404, mensaje: 'Proyecto no encontrado' }
+      }
+      return { status: 200, mensaje: 'Proyecto editado con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
     }
@@ -198,6 +221,44 @@ class proyectoM {
       const [res] = await db.query(sql, [id_responsable, id_pro]);
       if (res.affectedRows === 0) return { status: 404, mensaje: 'Proyecto no encontrado' };
       return { status: 200, mensaje: 'Líder cambiado con éxito' };
+    } catch (error) {
+      throw { status: 500, mensaje: error.message || error };
+    }
+  }
+
+  async cambiarEquipo(datos) {
+    const { id_equipo, id_pro } = datos
+    const sql = `UPDATE proyecto SET id_equipo = ? WHERE id_pro = ?`
+    try {
+      const [res] = await db.query(sql, [id_equipo, id_pro]);
+      if (res.affectedRows === 0) return { status: 404, mensaje: 'Proyecto no encontrado' };
+      return { status: 200, mensaje: 'Equipo cambiado con éxito' };
+    } catch (error) {
+      throw { status: 500, mensaje: error.message || error };
+    }
+  }
+
+  async cambiarFechas(datos) {
+    const { inicio, cierre, id_pro } = datos
+    const fecha_inicio = new Date(inicio) || null
+    const fecha_cierre = new Date(cierre) || null
+    let sqlArray = []
+    let edit = []
+    if (inicio) {
+      sqlArray.push('fecha_inicio = ?')
+      edit.push(fecha_inicio)
+    }
+    if (cierre) {
+      sqlArray.push('fecha_cierre = ?')
+      edit.push(fecha_cierre)
+    }
+    edit.push(id_pro)
+    const campos = sqlArray.join(',')
+    const sql = `UPDATE proyecto SET ${campos} WHERE id_pro = ?`
+    try {
+      const [res] = await db.query(sql, edit);
+      if (res.affectedRows === 0) return { status: 404, mensaje: 'Proyecto no encontrado' };
+      return { status: 200, mensaje: 'Fechas ingresadas con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
     }
