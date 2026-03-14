@@ -9,10 +9,10 @@
     <v-list density="compact" nav>
       <template v-for="link in items">
         <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
-          v-if="link.value != 'usuarios'">
+          v-if="link.value != 'usuarios'" :data-test="link.title">
         </v-list-item>
         <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
-          v-if="link.value == 'usuarios' && role === 'admin'">
+          v-if="link.value == 'usuarios' && role === 'admin'" :data-test="link.title">
         </v-list-item>
       </template>
       <v-list-item prepend-icon="mdi-logout"> <v-btn color="error" @click="logout">Cerrar
@@ -23,17 +23,17 @@
 
   <div v-if="$vuetify.display.mobile">
     <v-app-bar>
-      <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon variant="text" data-test="menu" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>Decision Flow</v-toolbar-title>
     </v-app-bar>
     <v-navigation-drawer v-model="drawer" :location="$vuetify.display.mobile ? 'left' : undefined" temporary>
       <v-list>
         <template v-for="link in items">
           <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
-            v-if="link.value != 'usuarios'">
+            v-if="link.value != 'usuarios'" :data-test="link.title" >
           </v-list-item>
           <v-list-item :prepend-icon="link.icon" :to="`/${link.ruta}`" :title="link.title" :value="link.value"
-            v-if="link.value == 'usuarios' && role === 'admin'">
+            v-if="link.value == 'usuarios' && role === 'admin'" :data-test="link.title">
           </v-list-item>
         </template>
         <v-list-item prepend-icon="mdi-logout"> <v-btn color="error" @click="logout">Cerrar

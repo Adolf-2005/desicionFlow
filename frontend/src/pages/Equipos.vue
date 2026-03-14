@@ -3,7 +3,7 @@
     <v-card-item title="Panel de control" class="px-2 px-sm-0 mt-5 mb-4" v-if="rol === 'admin'">
       <v-row class="pt-2">
         <v-col cols="12" sm="auto" align="center" justify="center">
-          <v-btn text="Crear usuario" color="primary" prepend-icon="mdi-plus" @click="crearEquipo"></v-btn>
+          <v-btn text="Crear equipo" color="primary" prepend-icon="mdi-plus" @click="crearEquipo"></v-btn>
         </v-col>
       </v-row>
     </v-card-item>

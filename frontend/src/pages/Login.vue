@@ -10,16 +10,16 @@
           </v-toolbar>
           <v-card-text class="pa-8">
             <v-form ref="form" v-model="formLogin">
-              <v-text-field v-model="record.usuario" label="Nombre de usuario" prepend-inner-icon="mdi-account-key"
+              <v-text-field v-model="record.usuario" data-test="usuario" label="Nombre de usuario" prepend-inner-icon="mdi-account-key"
                 variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]"></v-text-field>
               <div class="d-flex gap-2">
                 <v-text-field v-model="record.clave" label="Contraseña" prepend-inner-icon="mdi-lock-outline"
-                  :type="password" variant="underlined" class="mb-2" :rules="[rules.empty, rules.required]"
+                  :type="password" variant="underlined" data-test="clave" class="mb-2" :rules="[rules.empty, rules.required]"
                   @keyup.enter="login()"></v-text-field>
-                <v-btn icon="mdi-eye" @mousedown="password = 'text'" @mouseup="password = 'password'"></v-btn>
+                <v-btn icon="mdi-eye" @mousedown="password = 'text'" @mouseup="password = 'password'" data-test="ver"></v-btn>
               </div>
 
-              <v-btn color="primary" size="large" variant="elevated" @click="login" block rounded="pill"
+              <v-btn color="primary" size="large" variant="elevated" data-test="login" @click="login" block rounded="pill"
                 :disabled="!formLogin">
                 Iniciar Sesión
               </v-btn>

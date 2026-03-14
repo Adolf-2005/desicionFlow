@@ -17,15 +17,14 @@ const connection = mysql.createPool({
 });
 
 // Verificación de conexión inicial
-connection.getConnection((err, connection) => {
-  if (err) {
-    console.error('Error al conectar la base de datos: ' + err.message);
-    return;
+(async () => {
+  try {
+    const conn = await connection.getConnection();
+    console.log('✅ Conexión exitosa al Pool de MySQL');
+    conn.release(); // Muy importante liberar la conexión
+  } catch (err) {
+    console.error('❌ Error al conectar la base de datos: ' + err.message);
   }
-  if (connection) {
-    console.log('Conexión exitosa al Pool de MySQL');
-    connection.release(); // Devuelve la conexión al pool
-  }
-});
+})();
 
 module.exports = connection;
