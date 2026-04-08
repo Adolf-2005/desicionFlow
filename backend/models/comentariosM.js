@@ -44,6 +44,8 @@ class comentariosM {
     } catch (error) {
       await conect.rollback()
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 
@@ -84,6 +86,8 @@ class comentariosM {
     } catch (error) {
       await conect.rollback()
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 
@@ -125,6 +129,8 @@ class comentariosM {
       return { status: 200, mensaje: 'Comentario eliminado con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 
@@ -160,6 +166,8 @@ class comentariosM {
       return { status: 200, mensaje: 'Comentario eliminado con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 
@@ -200,6 +208,8 @@ class comentariosM {
       return { status: 200, mensaje: 'Estado cambiado con éxito' }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 

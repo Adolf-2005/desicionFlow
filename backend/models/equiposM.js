@@ -39,6 +39,8 @@ class equipoM {
     } catch (error) {
       await connection.rollback();
       return { status: 500, mensaje: error }
+    } finally {
+      conect.release();
     }
   }
 
@@ -62,6 +64,8 @@ class equipoM {
     } catch (error) {
       await connection.rollback();
       return { status: 500, mensaje: error }
+    } finally {
+      conect.release();
     }
   }
 
@@ -95,6 +99,8 @@ class equipoM {
     } catch (error) {
       await connection.rollback();
       return { status: 500, mensaje: error }
+    } finally {
+      conect.release();
     }
   }
 

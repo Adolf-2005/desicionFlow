@@ -44,7 +44,7 @@ class proyectoM {
       await conect.beginTransaction()
       const [res] = await conect.query(sqlEqui, id_usu)
       if (res.length === 0) {
-        return { status: 200, mensaje: 'No hay proyectos activos' }
+        return { status: 200, mensaje: 'No hay proyectos activos', proyectos: [] };
       }
       for (const e of res) {
         const [p] = await conect.query(sqlProyecto, e.id_equi)
@@ -56,6 +56,8 @@ class proyectoM {
       return { status: 200, mensaje: 'Proyectos consultados con éxito', proyectos: proyectos }
     } catch (error) {
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 
@@ -76,6 +78,8 @@ class proyectoM {
       }
     } catch (error) {
       throw { status: 500, mensaje: error }
+    } finally {
+      conect.release();
     }
   }
 

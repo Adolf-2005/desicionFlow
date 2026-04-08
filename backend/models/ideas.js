@@ -112,6 +112,8 @@ class ideasM {
     } catch (error) {
       await conect.rollback()
       throw { status: 500, mensaje: error.message || error };
+    } finally {
+      conect.release();
     }
   }
 

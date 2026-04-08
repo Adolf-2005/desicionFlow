@@ -82,7 +82,7 @@ class usuariosM {
       const access = await bcrypt.compare(actual, hash)
       if (access === true) {
         const hashPass = await bcrypt.hash(clave, saltRounds);
-        const [resPass] = await db.query(sqlChange, [hashPass, usuario, 0])
+        const [resPass] = await db.query(sqlChange, [hashPass, 0, usuario])
         if (resPass.affectedRows === 0) {
           return { status: 400, mensaje: 'Usuario no encontrado' }
         }
